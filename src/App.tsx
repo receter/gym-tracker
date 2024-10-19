@@ -1,40 +1,145 @@
 import "./App.css";
 
-import { Button, classCard, Stack } from "@sys42/ui";
-import { cn } from "@sys42/utils";
+import {
+  Button,
+  classButtonGroup,
+  FormField,
+  Stack,
+  TextInput,
+} from "@sys42/ui";
+import { usePersistentState } from "@sys42/utils";
 import { useState } from "react";
 
-import viteLogo from "/vite.svg";
+type TrainingTracker = {
+  id: number;
+  name: string;
+  machineId?: number;
+  sessions: TrainingTrackerSession[];
+};
 
-import reactLogo from "./assets/react.svg";
+type TrainingTrackerSession = {
+  date: string;
+  activities: TrainingActivity[];
+};
+
+type TrainingMachine = {
+  id: number;
+  name: string;
+};
+
+type TrainingActivity = TrainingRest | TrainingSet | TrainingSuperSet;
+
+type TrainingRest = {
+  duration: number;
+};
+
+type TrainingSet = {
+  reps: number;
+  weight: number;
+};
+
+type TrainingSuperSet = {
+  repsA: number;
+  repsB: number;
+  weightA: number;
+  weightB: number;
+};
+
+type AppMode = "trackers" | "new-tracker";
+
+function getNextIdForItems(items: { id: number }[]) {
+  return items.length > 0
+    ? items.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1
+    : 1;
+}
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [appMode, setAppMode] = useState<AppMode>("trackers");
+
+  const [trackers, setTrackers] = usePersistentState<TrainingTracker[]>(
+    "trackers",
+    [],
+  );
+
+  // const [machines] = usePersistentState<TrainingMachine[]>(
+  //   "machines",
+  //   [],
+  // );
+
+  const nextTrackerId = getNextIdForItems(trackers);
+  //const nextMachineId = getNextIdForItems(machines);
+
+  const handleClickAddTracker = () => {
+    setAppMode("new-tracker");
+  };
+
+  return (
+    <>
+      {appMode === "trackers" && (
+        <Stack>
+          <TrackersList trackers={trackers} />
+          <Button variant="primary" onClick={handleClickAddTracker}>
+            Add tracker
+          </Button>
+        </Stack>
+      )}
+
+      {appMode === "new-tracker" && (
+        <NewTrackerForm
+          handleClose={() => setAppMode("trackers")}
+          handleSave={(tracker) => {
+            const newTracker: TrainingTracker = {
+              ...tracker,
+              id: nextTrackerId,
+            };
+            setTrackers((trackers) => [...trackers, newTracker]);
+            setAppMode("trackers");
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function NewTrackerForm(props: {
+  handleClose: () => void;
+  handleSave: (tracker: Omit<TrainingTracker, "id">) => void;
+}) {
+  const { handleClose, handleSave } = props;
+  const [name, setName] = useState("");
+
+  const handleClickSave = () => {
+    handleSave({ name, sessions: [] });
+  };
 
   return (
     <Stack>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <Stack className={cn(classCard, "card")}>
-        <Button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+      <h1>New tracker</h1>
+      <FormField label="Name">
+        <TextInput value={name} onChange={(e) => setName(e.target.value)} />
+      </FormField>
+      <div className={classButtonGroup}>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button variant="primary" onClick={handleClickSave}>
+          Save
         </Button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </Stack>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      </div>
     </Stack>
   );
+}
+
+function TrackersList({ trackers }: { trackers: TrainingMachine[] }) {
+  return (
+    <Stack>
+      {trackers.map((tracker) => (
+        <TrackersListItem key={tracker.id} tracker={tracker} />
+      ))}
+    </Stack>
+  );
+}
+
+function TrackersListItem({ tracker }: { tracker: TrainingMachine }) {
+  return <div>{tracker.name}</div>;
 }
 
 export default App;
