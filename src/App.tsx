@@ -70,6 +70,10 @@ function App() {
     });
   }
 
+  function handleBackButtonClick() {
+    setAppMode("trackers");
+  }
+
   return (
     <>
       {appMode === "trackers" && (
@@ -100,6 +104,7 @@ function App() {
             <Tracker
               tracker={activeTracker}
               onCommitSession={handleCommitSession}
+              onBack={handleBackButtonClick}
             />
           )}
           {!activeTracker && (
