@@ -6,9 +6,11 @@ import styles from "./styles.module.css";
 export function Tracker({
   tracker,
   onCommitSession,
+  onBack,
 }: {
   tracker: TrainingTracker;
   onCommitSession: (trackerId: number, session: TrainingTrackerSession) => void;
+  onBack: () => void;
 }) {
   const [activeSession, setActiveSession] =
     useState<TrainingTrackerSession | null>(null);
@@ -36,6 +38,9 @@ export function Tracker({
 
   return (
     <Stack className={styles.tracker}>
+      <button className={styles.backButton} onClick={onBack}>
+        Back
+      </button>
       <h1>{tracker.name}</h1>
 
       {activeSession && (

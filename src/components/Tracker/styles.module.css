@@ -21,3 +21,14 @@
   align-items: baseline;
   gap: 1rem;
 }
+
+.backButton {
+  background: none;
+  border: none;
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  margin-bottom: 10px;
+}
