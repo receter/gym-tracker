@@ -8,44 +8,13 @@ import {
   TextInput,
 } from "@sys42/ui";
 import { usePersistentState } from "@sys42/utils";
+import { produce } from "immer";
 import { useState } from "react";
 
-type TrainingTracker = {
-  id: number;
-  name: string;
-  machineId?: number;
-  sessions: TrainingTrackerSession[];
-};
+import { Tracker } from "./components/Tracker";
+import { TrackersList } from "./components/TrackersList";
 
-type TrainingTrackerSession = {
-  date: string;
-  activities: TrainingActivity[];
-};
-
-type TrainingMachine = {
-  id: number;
-  name: string;
-};
-
-type TrainingActivity = TrainingRest | TrainingSet | TrainingSuperSet;
-
-type TrainingRest = {
-  duration: number;
-};
-
-type TrainingSet = {
-  reps: number;
-  weight: number;
-};
-
-type TrainingSuperSet = {
-  repsA: number;
-  repsB: number;
-  weightA: number;
-  weightB: number;
-};
-
-type AppMode = "trackers" | "new-tracker";
+type AppMode = "trackers" | "new-tracker" | "tracker";
 
 function getNextIdForItems(items: { id: number }[]) {
   return items.length > 0
@@ -55,10 +24,15 @@ function getNextIdForItems(items: { id: number }[]) {
 
 function App() {
   const [appMode, setAppMode] = useState<AppMode>("trackers");
+  const [activeTrackerId, setActiveTrackerId] = useState<number | null>(null);
 
   const [trackers, setTrackers] = usePersistentState<TrainingTracker[]>(
     "trackers",
     [],
+  );
+
+  const activeTracker = trackers.find(
+    (tracker) => tracker.id === activeTrackerId,
   );
 
   // const [machines] = usePersistentState<TrainingMachine[]>(
@@ -73,11 +47,40 @@ function App() {
     setAppMode("new-tracker");
   };
 
+  function handleSaveNewTracker(tracker: Omit<TrainingTracker, "id">) {
+    const newTracker: TrainingTracker = {
+      ...tracker,
+      id: nextTrackerId,
+    };
+    setTrackers((trackers) => [...trackers, newTracker]);
+    setAppMode("trackers");
+  }
+
+  function handleCommitSession(
+    trackerId: number,
+    session: TrainingTrackerSession,
+  ) {
+    setTrackers((trackers) => {
+      return produce(trackers, (draft) => {
+        const tracker = draft.find((t) => t.id === trackerId);
+        if (tracker) {
+          tracker.sessions.push(session);
+        }
+      });
+    });
+  }
+
   return (
     <>
       {appMode === "trackers" && (
         <Stack>
-          <TrackersList trackers={trackers} />
+          <TrackersList
+            trackers={trackers}
+            onItemClick={(tracker) => {
+              setActiveTrackerId(tracker.id);
+              setAppMode("tracker");
+            }}
+          />
           <Button variant="primary" onClick={handleClickAddTracker}>
             Add tracker
           </Button>
@@ -87,15 +90,25 @@ function App() {
       {appMode === "new-tracker" && (
         <NewTrackerForm
           handleClose={() => setAppMode("trackers")}
-          handleSave={(tracker) => {
-            const newTracker: TrainingTracker = {
-              ...tracker,
-              id: nextTrackerId,
-            };
-            setTrackers((trackers) => [...trackers, newTracker]);
-            setAppMode("trackers");
-          }}
+          handleSave={handleSaveNewTracker}
         />
+      )}
+
+      {appMode === "tracker" && (
+        <div>
+          {activeTracker && (
+            <Tracker
+              tracker={activeTracker}
+              onCommitSession={handleCommitSession}
+            />
+          )}
+          {!activeTracker && (
+            <Stack>
+              <div>Tracker not found</div>
+              <Button onClick={() => setAppMode("trackers")}>Back</Button>
+            </Stack>
+          )}
+        </div>
       )}
     </>
   );
@@ -126,20 +139,6 @@ function NewTrackerForm(props: {
       </div>
     </Stack>
   );
-}
-
-function TrackersList({ trackers }: { trackers: TrainingMachine[] }) {
-  return (
-    <Stack>
-      {trackers.map((tracker) => (
-        <TrackersListItem key={tracker.id} tracker={tracker} />
-      ))}
-    </Stack>
-  );
-}
-
-function TrackersListItem({ tracker }: { tracker: TrainingMachine }) {
-  return <div>{tracker.name}</div>;
 }
 
 export default App;

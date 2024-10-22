@@ -1,0 +1,5 @@
+.trackerListItem {
+  cursor: pointer;
+  background: #efefefef;
+  padding: var(--sys42-spacing-md);
+}
