@@ -1,4 +1,5 @@
 import { Button, classButtonGroup, Stack, TextLinkButton } from "@sys42/ui";
+import { produce } from "immer";
 import { useEffect, useMemo, useState } from "react";
 
 import styles from "./styles.module.css";
@@ -57,30 +58,39 @@ export function Tracker({
           <Button variant="primary" onClick={handleClickStartSession}>
             Let's go!
           </Button>
-          {tracker.sessions.map((session) => (
-            <div key={session.date}>
-              <div>{session.date}</div>
-              <div>{session.dateEnd}</div>
-              {session.activities.map((activity, index) => (
-                <div key={index}>
-                  {activity.type === "rest" && (
-                    <div>Rest for {activity.duration} seconds</div>
-                  )}
-                  {activity.type === "set" && (
-                    <div>
-                      {activity.reps} reps at {activity.weight}kg
-                    </div>
-                  )}
-                  {activity.type === "superset" && (
-                    <div>
-                      {activity.repsA} reps at {activity.weightA}kg and{" "}
-                      {activity.repsB} reps at {activity.weightB}kg
-                    </div>
-                  )}
+          {tracker.sessions.map((session) => {
+            const sessionStart = new Date(session.date);
+            const sessionEnd = new Date(session.dateEnd);
+            const sessionDuration =
+              sessionEnd.getTime() - sessionStart.getTime();
+            const formattedStartDate = sessionStart.toLocaleString();
+
+            return (
+              <div key={session.date}>
+                <div title={formattedStartDate}>
+                  Duration: {formatTime(sessionDuration)}
                 </div>
-              ))}
-            </div>
-          ))}
+                {session.activities.map((activity, index) => (
+                  <div key={index}>
+                    {activity.type === "rest" && (
+                      <div>Rest for {activity.duration} seconds</div>
+                    )}
+                    {activity.type === "set" && (
+                      <div>
+                        {activity.reps} reps at {activity.weight}kg
+                      </div>
+                    )}
+                    {activity.type === "superset" && (
+                      <div>
+                        {activity.repsA} reps at {activity.weightA}kg and{" "}
+                        {activity.repsB} reps at {activity.weightB}kg
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </>
       )}
     </Stack>
@@ -111,8 +121,9 @@ export function TrainingSessionInterface({
   }
 
   const [currentTime, setCurrentTime] = useState(() => new Date().getTime());
-  const [reps, setReps] = useState(8);
-  const [weight, setWeight] = useState(10);
+  const [reps, setReps] = useState<number | null>(8);
+  const [weight, setWeight] = useState<number | null>(10);
+  const [error, setError] = useState<string | null>(null);
 
   const sessionStartTime = useMemo(
     () => new Date(session.date).getTime(),
@@ -128,30 +139,30 @@ export function TrainingSessionInterface({
 
   const sessionDuration = currentTime - sessionStartTime;
 
-  function handleAddActivity(reps: number, weight: number) {
-    const newActivities = [];
-
-    const newActivity: TrainingActivity = {
-      type: "set",
-      reps,
-      weight,
-    };
-
-    newActivities.push(newActivity);
-
-    const updatedSession = {
-      ...session,
-      activities: [...session.activities, ...newActivities],
-    };
+  function handleAddActivity(reps: number | null, weight: number | null) {
+    if (reps === null || weight === null) {
+      setError("Reps and weight must be provided.");
+      return;
+    }
+    setError(null);
+    const updatedSession = produce(session, (draft) => {
+      draft.activities.push({
+        type: "set",
+        reps,
+        weight,
+      });
+    });
     onChange(updatedSession);
   }
 
   function handleChangeWeight(event: React.ChangeEvent<HTMLInputElement>) {
-    setWeight(Number(event.target.value));
+    const value = event.target.value;
+    setWeight(value === "" ? null : Number(value));
   }
 
   function handleChangeReps(event: React.ChangeEvent<HTMLInputElement>) {
-    setReps(Math.round(Number(event.target.value)));
+    const value = event.target.value;
+    setReps(value === "" ? null : Math.round(Number(value)));
   }
 
   return (
@@ -162,8 +173,7 @@ export function TrainingSessionInterface({
         <input
           className={styles.inputWeight}
           type="number"
-          value={weight}
-          min={0}
+          value={weight ?? ""}
           onChange={handleChangeWeight}
         />
         kg
@@ -172,13 +182,13 @@ export function TrainingSessionInterface({
         <input
           className={styles.inputReps}
           type="number"
-          value={reps}
-          min={0}
+          value={reps ?? ""}
           step={1}
           onChange={handleChangeReps}
         />{" "}
         reps
       </div>
+      {error && <div className={styles.error}>{error}</div>}
       <div className={classButtonGroup}>
         <Button onClick={() => handleAddActivity(reps, weight)}>
           Add Activity
@@ -214,8 +224,11 @@ export function TrainingSessionInterface({
 function formatTime(time: number) {
   const seconds = Math.floor(time / 1000);
   const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
   const remainingSeconds = seconds % 60;
   const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
-  const formattedMinutes = minutes.toString().padStart(2, "0");
-  return `${formattedMinutes}:${formattedSeconds}`;
+  const formattedMinutes = remainingMinutes.toString().padStart(2, "0");
+  const formattedHours = hours.toString().padStart(2, "0");
+  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 }
