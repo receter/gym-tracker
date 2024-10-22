@@ -1,4 +1,4 @@
-import { Button, classButtonGroup, Stack } from "@sys42/ui";
+import { Button, classButtonGroup, Stack, TextLinkButton } from "@sys42/ui";
 import { useEffect, useMemo, useState } from "react";
 
 import styles from "./styles.module.css";
@@ -38,9 +38,9 @@ export function Tracker({
 
   return (
     <Stack className={styles.tracker}>
-      <button className={styles.backButton} onClick={onBack}>
+      <TextLinkButton className={styles.backButton} onClick={onBack}>
         Back
-      </button>
+      </TextLinkButton>
       <h1>{tracker.name}</h1>
 
       {activeSession && (
