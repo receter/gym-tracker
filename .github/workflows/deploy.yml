@@ -21,14 +21,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Ensure surge is installed
-        run: npm install --global surge
-
       - name: Build the app
         run: npm run build
 
       - name: Deploy to Surge
-        run: surge ./dist gym-tracker.surge.sh
+        run: npx surge ./dist gym-tracker.surge.sh
         env:
           SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
           SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
