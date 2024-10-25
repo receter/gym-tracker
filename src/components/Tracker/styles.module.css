@@ -40,3 +40,18 @@
 .backButton:hover {
   background: #d0d0d0;
 }
+
+.session {
+  border: 1px solid #ddd;
+  border-radius: var(--sys42-border-radius-md);
+  background-color: #efefef;
+  padding: 1rem;
+}
+
+.sessionActivities {
+  font-size: 2rem;
+}
+
+.sessionDuration {
+  color: #333;
+}

@@ -1,6 +1,6 @@
 import { Button, classButtonGroup, Stack, TextLinkButton } from "@sys42/ui";
 import { produce } from "immer";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import styles from "./styles.module.css";
 
@@ -70,28 +70,38 @@ export function Tracker({
             const formattedStartDate = sessionStart.toLocaleString();
 
             return (
-              <div key={session.date}>
-                <div title={formattedStartDate}>
-                  Duration: {formatTime(sessionDuration)}
+              <div className={styles.session} key={session.date}>
+                <div className={styles.sessionActivities}>
+                  {session.activities.length === 0 && "0"}
+                  {session.activities.map((activity, index) => (
+                    <Fragment key={index}>
+                      {activity.type === "rest" && (
+                        <div>Rest for {activity.duration} seconds</div>
+                      )}
+                      {activity.type === "set" && (
+                        <>
+                          {index !== 0 && "/"}
+                          {activity.reps}
+                        </>
+                      )}
+                      {activity.type === "superset" && (
+                        <div>
+                          {activity.repsA} reps at {activity.weightA}kg and{" "}
+                          {activity.repsB} reps at {activity.weightB}kg
+                        </div>
+                      )}
+                    </Fragment>
+                  ))}
                 </div>
-                {session.activities.map((activity, index) => (
-                  <div key={index}>
-                    {activity.type === "rest" && (
-                      <div>Rest for {activity.duration} seconds</div>
-                    )}
-                    {activity.type === "set" && (
-                      <div>
-                        {activity.reps} reps at {activity.weight}kg
-                      </div>
-                    )}
-                    {activity.type === "superset" && (
-                      <div>
-                        {activity.repsA} reps at {activity.weightA}kg and{" "}
-                        {activity.repsB} reps at {activity.weightB}kg
-                      </div>
-                    )}
+                <div className={styles.durationAndWeight}>
+                  <SessionWeight session={session} />
+                  <div
+                    className={styles.sessionDuration}
+                    title={formattedStartDate}
+                  >
+                    Duration: {formatTime(sessionDuration)}
                   </div>
-                ))}
+                </div>
               </div>
             );
           })}
@@ -235,4 +245,17 @@ function formatTime(time: number) {
   const formattedMinutes = remainingMinutes.toString().padStart(2, "0");
   const formattedHours = hours.toString().padStart(2, "0");
   return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
+function SessionWeight({ session }: { session: TrainingTrackerSession }) {
+  const setWeights = session.activities.reduce(
+    (weights, activity) =>
+      activity.type === "set" ? [...weights, activity.weight] : weights,
+    [] as number[],
+  );
+  // const totalSetWeight = setWeights.reduce((a, b) => a + b, 0);
+  const isAllSetWeightsEqual = setWeights.every(
+    (weight) => weight === setWeights[0],
+  );
+  return <div>{isAllSetWeightsEqual ? setWeights[0] : "Mixed"} kg</div>;
 }
