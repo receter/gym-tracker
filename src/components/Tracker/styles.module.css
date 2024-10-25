@@ -23,4 +23,20 @@
 }
 
 .backButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  border-radius: 50%;
+  background: #efefef;
+  padding: 1rem;
+  width: 1rem;
+  height: 1rem;
+  color: #5b5b5b;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+}
+
+.backButton:hover {
+  background: #d0d0d0;
 }

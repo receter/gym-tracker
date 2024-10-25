@@ -1,5 +1,10 @@
+.trackersList {
+}
+
 .trackerListItem {
   cursor: pointer;
-  background: #efefefef;
+  border: 1px solid #ddd;
+  border-radius: var(--sys42-border-radius-sm);
+  background: #efefef;
   padding: var(--sys42-spacing-md);
 }

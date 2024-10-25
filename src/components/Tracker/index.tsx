@@ -39,8 +39,12 @@ export function Tracker({
 
   return (
     <Stack className={styles.tracker}>
-      <TextLinkButton className={styles.backButton} onClick={onBack}>
-        Back
+      <TextLinkButton
+        className={styles.backButton}
+        onClick={onBack}
+        aria-label="Back"
+      >
+        ⨉
       </TextLinkButton>
       <h1>{tracker.name}</h1>
 

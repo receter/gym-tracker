@@ -10,7 +10,7 @@ export function TrackersList({
   onItemClick: (tracker: TrainingMachine) => void;
 }) {
   return (
-    <Stack>
+    <Stack className={styles.trackersList}>
       {trackers.map((tracker) => (
         <TrackersListItem
           key={tracker.id}
