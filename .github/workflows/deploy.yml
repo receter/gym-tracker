@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Install dependencies
         run: npm install
@@ -24,8 +24,11 @@ jobs:
       - name: Build the app
         run: npm run build
 
+      - name: Install Surge
+        run: npm install --global surge
+
       - name: Deploy to Surge
-        run: npx surge ./dist gym-tracker.surge.sh
+        run: surge dist
         env:
           SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
           SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
