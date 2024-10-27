@@ -1,3 +1,7 @@
+.tracker {
+  position: relative;
+}
+
 .trainingSessionInterface {
   border: 1px solid #ddd;
   border-radius: var(--sys42-border-radius-md);
@@ -24,8 +28,8 @@
 
 .backButton {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0;
+  right: 0;
   border-radius: 50%;
   background: #efefef;
   padding: 1rem;
@@ -54,4 +58,7 @@
 
 .sessionDuration {
   color: #333;
+}
+
+.deleteButton {
 }

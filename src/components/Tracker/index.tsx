@@ -2,39 +2,69 @@ import { Button, classButtonGroup, Stack, TextLinkButton } from "@sys42/ui";
 import { produce } from "immer";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
+import { getNextIdForItems } from "../../utils";
 import styles from "./styles.module.css";
+
+export type TrainingTrackerSessionPrototype = Omit<
+  TrainingTrackerSession,
+  "dateEnd" | "id"
+>;
 
 export function Tracker({
   tracker,
-  onCommitSession,
+  onChange,
+  onDelete,
   onBack,
 }: {
   tracker: TrainingTracker;
-  onCommitSession: (trackerId: number, session: TrainingTrackerSession) => void;
+  onChange: (tracker: TrainingTracker) => void;
+  onDelete: (trackerId: number) => void;
   onBack: () => void;
 }) {
   const [activeSession, setActiveSession] =
-    useState<TrainingTrackerSession | null>(null);
+    useState<TrainingTrackerSessionPrototype | null>(null);
 
   function handleClickStartSession() {
-    const newSession: typeof activeSession = {
+    const newSession: TrainingTrackerSessionPrototype = {
       date: new Date().toISOString(),
-      dateEnd: new Date().toISOString(),
       activities: [],
     };
     setActiveSession(newSession);
   }
 
-  function handleCommitSession(session: TrainingTrackerSession) {
-    onCommitSession(tracker.id, {
-      ...session,
-      dateEnd: new Date().toISOString(),
+  function handleCommitSession(session: TrainingTrackerSessionPrototype) {
+    const updatedTracker = produce(tracker, (draft) => {
+      draft.sessions.push({
+        ...session,
+        dateEnd: new Date().toISOString(),
+        id: getNextIdForItems(tracker.sessions),
+      });
     });
+    onChange(updatedTracker);
     setActiveSession(null);
   }
 
   function handleClickCancel() {
     setActiveSession(null);
+  }
+
+  function handleDeleteSession(sessionId: number) {
+    if (window.confirm("Are you sure you want to delete this session?")) {
+      const updatedTracker = produce(tracker, (draft) => {
+        const sessionIndex = draft.sessions.findIndex(
+          (i) => i.id === sessionId,
+        );
+        if (sessionIndex !== -1) {
+          draft.sessions.splice(sessionIndex, 1);
+        }
+      });
+      onChange(updatedTracker);
+    }
+  }
+
+  function handleClickDelete() {
+    if (window.confirm("Are you sure you want to delete this tracker?"))
+      onDelete(tracker.id);
   }
 
   return (
@@ -62,7 +92,7 @@ export function Tracker({
           <Button variant="primary" onClick={handleClickStartSession}>
             Let's go!
           </Button>
-          {tracker.sessions.map((session) => {
+          {tracker.sessions.toReversed().map((session) => {
             const sessionStart = new Date(session.date);
             const sessionEnd = new Date(session.dateEnd);
             const sessionDuration =
@@ -102,19 +132,28 @@ export function Tracker({
                     Duration: {formatTime(sessionDuration)}
                   </div>
                 </div>
+                <Button
+                  className={styles.deleteButton}
+                  onClick={() => handleDeleteSession(session.id)}
+                >
+                  Delete
+                </Button>
               </div>
             );
           })}
         </>
       )}
+      <div>
+        <Button onClick={handleClickDelete}>Delete this tracker</Button>
+      </div>
     </Stack>
   );
 }
 
 type TrainingSessionInterfaceProps = {
-  session: TrainingTrackerSession;
-  onChange: (session: TrainingTrackerSession) => void;
-  onCommit: (session: TrainingTrackerSession) => void;
+  session: TrainingTrackerSessionPrototype;
+  onChange: (session: TrainingTrackerSessionPrototype) => void;
+  onCommit: (session: TrainingTrackerSessionPrototype) => void;
   onClickCancel: () => void;
 };
 
@@ -207,7 +246,6 @@ export function TrainingSessionInterface({
         <Button onClick={() => handleAddActivity(reps, weight)}>
           Add Activity
         </Button>
-        <Button onClick={() => onCommit(session)}>Commit Session</Button>
       </div>
       <div>Logged sets:</div>
       <div>

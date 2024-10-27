@@ -6,6 +6,7 @@ type TrainingTracker = {
 };
 
 type TrainingTrackerSession = {
+  id: number;
   date: string;
   dateEnd: string;
   activities: TrainingActivity[];

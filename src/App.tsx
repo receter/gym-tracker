@@ -13,14 +13,9 @@ import { useState } from "react";
 
 import { Tracker } from "./components/Tracker";
 import { TrackersList } from "./components/TrackersList";
+import { getNextIdForItems } from "./utils";
 
 type AppMode = "trackers" | "new-tracker" | "tracker";
-
-function getNextIdForItems(items: { id: number }[]) {
-  return items.length > 0
-    ? items.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1
-    : 1;
-}
 
 function App() {
   const [appMode, setAppMode] = useState<AppMode>("trackers");
@@ -56,18 +51,27 @@ function App() {
     setAppMode("trackers");
   }
 
-  function handleCommitSession(
-    trackerId: number,
-    session: TrainingTrackerSession,
-  ) {
+  function handleChangeTracker(tracker: TrainingTracker) {
     setTrackers((trackers) => {
       return produce(trackers, (draft) => {
-        const tracker = draft.find((t) => t.id === trackerId);
-        if (tracker) {
-          tracker.sessions.push(session);
+        const trackerIndex = draft.findIndex((t) => t.id === tracker.id);
+        if (trackerIndex !== -1) {
+          draft.splice(trackerIndex, 1, tracker);
         }
       });
     });
+  }
+
+  function handleDeleteTracker(trackerId: number) {
+    setTrackers((trackers) => {
+      return produce(trackers, (draft) => {
+        const trackerIndex = draft.findIndex((t) => t.id === trackerId);
+        if (trackerIndex !== -1) {
+          trackers.splice(trackerIndex, 1);
+        }
+      });
+    });
+    setAppMode("trackers");
   }
 
   function handleBackButtonClick() {
@@ -103,7 +107,8 @@ function App() {
           {activeTracker && (
             <Tracker
               tracker={activeTracker}
-              onCommitSession={handleCommitSession}
+              onChange={handleChangeTracker}
+              onDelete={handleDeleteTracker}
               onBack={handleBackButtonClick}
             />
           )}
