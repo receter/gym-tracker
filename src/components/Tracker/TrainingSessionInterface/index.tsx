@@ -28,6 +28,7 @@ export function TrainingSessionInterface({
   defaultWeight = 10,
 }: TrainingSessionInterfaceProps) {
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [restingStartTime, setRestingStartTime] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(() => new Date().getTime());
   const [reps, setReps] = useState<number | null>(defaultReps);
   const [weight, setWeight] = useState<number | null>(defaultWeight);
@@ -59,6 +60,7 @@ export function TrainingSessionInterface({
     });
     setError(null);
     setMode("resting");
+    setRestingStartTime(new Date().getTime());
     onChange(updatedSession);
   }
 
@@ -74,6 +76,17 @@ export function TrainingSessionInterface({
 
   function handleClickStartNextSet() {
     setMode("lifting");
+    if (restingStartTime) {
+      const restingDuration = currentTime - restingStartTime;
+      const updatedSession = produce(session, (draft) => {
+        draft.activities.push({
+          type: "rest",
+          duration: restingDuration,
+        });
+      });
+      setRestingStartTime(null);
+      onChange(updatedSession);
+    }
   }
 
   function handleClickStart() {
@@ -83,17 +96,27 @@ export function TrainingSessionInterface({
 
   return (
     <Stack className={styles.trainingSessionInterface}>
-      {mode === "idle" && <Button onClick={handleClickStart}>Start</Button>}
+      {mode === "idle" && (
+        <Button variant="primary" onClick={handleClickStart}>
+          Start
+        </Button>
+      )}
       {mode === "resting" && (
         <Stack className={styles.set}>
           <div>
-            <strong>Resting...</strong>
+            <h2>Resting</h2>
+            {restingStartTime && (
+              <div>{formatTime(currentTime - restingStartTime)}</div>
+            )}
           </div>
-          <Button onClick={handleClickStartNextSet}>Start next set</Button>
+          <Button variant="primary" onClick={handleClickStartNextSet}>
+            Start next set
+          </Button>
         </Stack>
       )}
       {mode === "lifting" && (
         <Stack className={styles.set}>
+          <h2>Lifting</h2>
           <div className={styles.weightAndReps}>
             <div className={styles.inputGroupReps}>
               <input
@@ -142,7 +165,7 @@ export function TrainingSessionInterface({
         {sessionDuration !== null && (
           <div>Session time: {formatTime(sessionDuration)}</div>
         )}
-        <div>Logged sets:</div>
+        <div>Logged activities:</div>
         <div>
           {session.activities.map((activity, index) => (
             <div key={index}>
@@ -150,6 +173,9 @@ export function TrainingSessionInterface({
                 <div>
                   {activity.reps} reps at {activity.weight}kg
                 </div>
+              )}
+              {activity.type === "rest" && (
+                <div>Resting for {formatTime(activity.duration)}</div>
               )}
             </div>
           ))}

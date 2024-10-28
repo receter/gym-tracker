@@ -119,7 +119,9 @@ export function Tracker({
               {session.activities.map((activity, index) => (
                 <Fragment key={index}>
                   {activity.type === "rest" && (
-                    <div>Rest for {activity.duration} seconds</div>
+                    <span className={styles.rest}>
+                      ({formatTime(activity.duration)})
+                    </span>
                   )}
                   {activity.type === "set" && (
                     <>

@@ -14,5 +14,11 @@ export function formatTime(time: number) {
   const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
   const formattedMinutes = remainingMinutes.toString().padStart(2, "0");
   const formattedHours = hours.toString().padStart(2, "0");
-  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  if (hours === 0 && minutes === 0) {
+    return `${formattedSeconds}s`;
+  } else if (hours === 0) {
+    return `${formattedMinutes}m ${formattedSeconds}s`;
+  } else {
+    return `${formattedHours}h ${formattedMinutes}m ${formattedSeconds}s`;
+  }
 }
