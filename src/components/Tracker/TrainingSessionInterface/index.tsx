@@ -96,11 +96,6 @@ export function TrainingSessionInterface({
 
   return (
     <Stack className={styles.trainingSessionInterface}>
-      {mode === "idle" && (
-        <Button variant="primary" onClick={handleClickStart}>
-          Start
-        </Button>
-      )}
       {mode === "resting" && (
         <Stack className={styles.set}>
           <div>
@@ -114,9 +109,10 @@ export function TrainingSessionInterface({
           </Button>
         </Stack>
       )}
-      {mode === "lifting" && (
+      {(mode === "lifting" || mode === "idle") && (
         <Stack className={styles.set}>
-          <h2>Lifting</h2>
+          {mode === "lifting" && <h2>Lifting</h2>}
+          {mode === "idle" && <h2>Start session</h2>}
           <div className={styles.weightAndReps}>
             <div className={styles.inputGroupReps}>
               <input
@@ -140,12 +136,19 @@ export function TrainingSessionInterface({
           </div>
           {error && <div className={styles.error}>{error}</div>}
           <div className={classButtonGroup}>
-            <Button
-              variant="primary"
-              onClick={() => handleAddActivity(reps, weight)}
-            >
-              Log set
-            </Button>
+            {mode !== "idle" && (
+              <Button
+                variant="primary"
+                onClick={() => handleAddActivity(reps, weight)}
+              >
+                Log set
+              </Button>
+            )}
+            {mode === "idle" && (
+              <Button variant="primary" onClick={handleClickStart}>
+                Start
+              </Button>
+            )}
           </div>
         </Stack>
       )}

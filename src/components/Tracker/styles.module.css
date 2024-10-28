@@ -3,31 +3,19 @@
 }
 
 .backButton {
-  position: absolute;
-  top: 0;
-  right: 0;
-  border-radius: 50%;
-  background: var(--color-secondary-container);
-  padding: 1rem;
-  width: 1rem;
-  height: 1rem;
-  color: var(--color-on-secondary-container);
-  font-weight: bold;
-  line-height: 1;
-  text-align: center;
 }
 
 .backButton:hover {
-  background-color: color-mix(
-    in srgb,
-    var(--color-secondary-container),
-    var(--color-secondary) 8%
-  );
+}
+
+.sessions {
+  border-radius: var(--sys42-border-radius-md);
+  background: var(--color-surface-container);
 }
 
 .session {
-  border-radius: var(--sys42-border-radius-md);
-  background-color: var(--color-surface-container);
+  display: flex;
+  justify-content: space-between;
   padding: 1rem;
 }
 
@@ -35,11 +23,16 @@
   font-size: 2rem;
 }
 
+.durationAndWeight {
+  color: var(--color-on-surface-variant);
+}
+
 .sessionDuration {
   color: #333;
 }
 
 .deleteButton {
+  color: var(--color-on-surface);
 }
 
 .rest {

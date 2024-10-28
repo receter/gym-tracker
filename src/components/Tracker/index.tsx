@@ -94,71 +94,73 @@ export function Tracker({
 
   return (
     <Stack className={styles.tracker}>
-      <TextLinkButton
-        className={styles.backButton}
-        onClick={onBack}
-        aria-label="Back"
-      >
-        ⨉
+      <TextLinkButton className={styles.backButton} onClick={onBack}>
+        Back
       </TextLinkButton>
       <h1>{tracker.name}</h1>
 
       <Button variant="primary" onClick={handleClickStartSession}>
-        Let's go!
+        Start session
       </Button>
-      {tracker.sessions.toReversed().map((session) => {
-        const sessionStart = new Date(session.date);
-        const sessionEnd = new Date(session.dateEnd);
-        const sessionDuration = sessionEnd.getTime() - sessionStart.getTime();
-        const formattedStartDate = sessionStart.toLocaleString();
 
-        return (
-          <div className={styles.session} key={session.date}>
-            <div className={styles.sessionActivities}>
-              {session.activities.length === 0 && "0"}
-              {session.activities.map((activity, index) => (
-                <Fragment key={index}>
-                  {activity.type === "rest" && (
-                    <span className={styles.rest}>
-                      ({formatTime(activity.duration)})
-                    </span>
-                  )}
-                  {activity.type === "set" && (
-                    <>
-                      {index !== 0 && "/"}
-                      {activity.reps}
-                    </>
-                  )}
-                  {activity.type === "superset" && (
-                    <div>
-                      {activity.repsA} reps at {activity.weightA}kg and{" "}
-                      {activity.repsB} reps at {activity.weightB}kg
-                    </div>
-                  )}
-                </Fragment>
-              ))}
-            </div>
-            <div className={styles.durationAndWeight}>
-              <SessionWeight session={session} />
-              <div
-                className={styles.sessionDuration}
-                title={formattedStartDate}
-              >
-                Duration: {formatTime(sessionDuration)}
+      <div className={styles.sessions}>
+        {tracker.sessions.toReversed().map((session) => {
+          const sessionStart = new Date(session.date);
+          const sessionEnd = new Date(session.dateEnd);
+          const sessionDuration = sessionEnd.getTime() - sessionStart.getTime();
+          const formattedStartDate = sessionStart.toLocaleString();
+
+          return (
+            <div className={styles.session} key={session.date}>
+              <div>
+                <div className={styles.sessionActivities}>
+                  {session.activities.length === 0 && "0"}
+                  {session.activities.map((activity, index) => (
+                    <Fragment key={index}>
+                      {activity.type === "rest" && (
+                        <span className={styles.rest}>
+                          ({formatTime(activity.duration)})
+                        </span>
+                      )}
+                      {activity.type === "set" && (
+                        <>
+                          {index !== 0 && "/"}
+                          {activity.reps}
+                        </>
+                      )}
+                      {activity.type === "superset" && (
+                        <div>
+                          {activity.repsA} reps at {activity.weightA}kg and{" "}
+                          {activity.repsB} reps at {activity.weightB}kg
+                        </div>
+                      )}
+                    </Fragment>
+                  ))}
+                </div>
+                <div className={styles.durationAndWeight}>
+                  <SessionWeight session={session} />{" "}
+                  <span
+                    className={styles.sessionDuration}
+                    title={formattedStartDate}
+                  >
+                    {formatTime(sessionDuration)}
+                  </span>
+                </div>
               </div>
+              <TextLinkButton
+                className={styles.deleteButton}
+                onClick={() => handleDeleteSession(session.id)}
+              >
+                Delete
+              </TextLinkButton>
             </div>
-            <Button
-              className={styles.deleteButton}
-              onClick={() => handleDeleteSession(session.id)}
-            >
-              Delete
-            </Button>
-          </div>
-        );
-      })}
-
+          );
+        })}
+      </div>
       <div>
-        <Button onClick={handleClickDelete}>Delete this tracker</Button>
+        <TextLinkButton onClick={handleClickDelete}>
+          Delete this tracker
+        </TextLinkButton>
       </div>
     </Stack>
   );
@@ -174,5 +176,5 @@ function SessionWeight({ session }: { session: TrainingTrackerSession }) {
   const isAllSetWeightsEqual = setWeights.every(
     (weight) => weight === setWeights[0],
   );
-  return <div>{isAllSetWeightsEqual ? setWeights[0] : "Mixed"} kg</div>;
+  return <span>{isAllSetWeightsEqual ? setWeights[0] : "Mixed"} kg</span>;
 }
