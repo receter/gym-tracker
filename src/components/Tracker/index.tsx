@@ -1,14 +1,13 @@
-import { Button, classButtonGroup, Stack, TextLinkButton } from "@sys42/ui";
+import { Button, Stack, TextLinkButton } from "@sys42/ui";
 import { produce } from "immer";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useState } from "react";
 
-import { getNextIdForItems } from "../../utils";
+import { formatTime, getNextIdForItems } from "../../utils";
 import styles from "./styles.module.css";
-
-export type TrainingTrackerSessionPrototype = Omit<
-  TrainingTrackerSession,
-  "dateEnd" | "id"
->;
+import {
+  TrainingSessionInterface,
+  TrainingTrackerSessionPrototype,
+} from "./TrainingSessionInterface";
 
 export function Tracker({
   tracker,
@@ -67,6 +66,17 @@ export function Tracker({
       onDelete(tracker.id);
   }
 
+  if (activeSession) {
+    return (
+      <TrainingSessionInterface
+        session={activeSession}
+        onChange={(session) => setActiveSession(session)}
+        onCommit={handleCommitSession}
+        onClickCancel={handleClickCancel}
+      />
+    );
+  }
+
   return (
     <Stack className={styles.tracker}>
       <TextLinkButton
@@ -78,211 +88,63 @@ export function Tracker({
       </TextLinkButton>
       <h1>{tracker.name}</h1>
 
-      {activeSession && (
-        <TrainingSessionInterface
-          session={activeSession}
-          onChange={(session) => setActiveSession(session)}
-          onCommit={handleCommitSession}
-          onClickCancel={handleClickCancel}
-        />
-      )}
+      <Button variant="primary" onClick={handleClickStartSession}>
+        Let's go!
+      </Button>
+      {tracker.sessions.toReversed().map((session) => {
+        const sessionStart = new Date(session.date);
+        const sessionEnd = new Date(session.dateEnd);
+        const sessionDuration = sessionEnd.getTime() - sessionStart.getTime();
+        const formattedStartDate = sessionStart.toLocaleString();
 
-      {!activeSession && (
-        <>
-          <Button variant="primary" onClick={handleClickStartSession}>
-            Let's go!
-          </Button>
-          {tracker.sessions.toReversed().map((session) => {
-            const sessionStart = new Date(session.date);
-            const sessionEnd = new Date(session.dateEnd);
-            const sessionDuration =
-              sessionEnd.getTime() - sessionStart.getTime();
-            const formattedStartDate = sessionStart.toLocaleString();
-
-            return (
-              <div className={styles.session} key={session.date}>
-                <div className={styles.sessionActivities}>
-                  {session.activities.length === 0 && "0"}
-                  {session.activities.map((activity, index) => (
-                    <Fragment key={index}>
-                      {activity.type === "rest" && (
-                        <div>Rest for {activity.duration} seconds</div>
-                      )}
-                      {activity.type === "set" && (
-                        <>
-                          {index !== 0 && "/"}
-                          {activity.reps}
-                        </>
-                      )}
-                      {activity.type === "superset" && (
-                        <div>
-                          {activity.repsA} reps at {activity.weightA}kg and{" "}
-                          {activity.repsB} reps at {activity.weightB}kg
-                        </div>
-                      )}
-                    </Fragment>
-                  ))}
-                </div>
-                <div className={styles.durationAndWeight}>
-                  <SessionWeight session={session} />
-                  <div
-                    className={styles.sessionDuration}
-                    title={formattedStartDate}
-                  >
-                    Duration: {formatTime(sessionDuration)}
-                  </div>
-                </div>
-                <Button
-                  className={styles.deleteButton}
-                  onClick={() => handleDeleteSession(session.id)}
-                >
-                  Delete
-                </Button>
+        return (
+          <div className={styles.session} key={session.date}>
+            <div className={styles.sessionActivities}>
+              {session.activities.length === 0 && "0"}
+              {session.activities.map((activity, index) => (
+                <Fragment key={index}>
+                  {activity.type === "rest" && (
+                    <div>Rest for {activity.duration} seconds</div>
+                  )}
+                  {activity.type === "set" && (
+                    <>
+                      {index !== 0 && "/"}
+                      {activity.reps}
+                    </>
+                  )}
+                  {activity.type === "superset" && (
+                    <div>
+                      {activity.repsA} reps at {activity.weightA}kg and{" "}
+                      {activity.repsB} reps at {activity.weightB}kg
+                    </div>
+                  )}
+                </Fragment>
+              ))}
+            </div>
+            <div className={styles.durationAndWeight}>
+              <SessionWeight session={session} />
+              <div
+                className={styles.sessionDuration}
+                title={formattedStartDate}
+              >
+                Duration: {formatTime(sessionDuration)}
               </div>
-            );
-          })}
-        </>
-      )}
+            </div>
+            <Button
+              className={styles.deleteButton}
+              onClick={() => handleDeleteSession(session.id)}
+            >
+              Delete
+            </Button>
+          </div>
+        );
+      })}
+
       <div>
         <Button onClick={handleClickDelete}>Delete this tracker</Button>
       </div>
     </Stack>
   );
-}
-
-type TrainingSessionInterfaceProps = {
-  session: TrainingTrackerSessionPrototype;
-  onChange: (session: TrainingTrackerSessionPrototype) => void;
-  onCommit: (session: TrainingTrackerSessionPrototype) => void;
-  onClickCancel: () => void;
-};
-
-export function TrainingSessionInterface({
-  session,
-  onChange,
-  onCommit,
-  onClickCancel,
-}: TrainingSessionInterfaceProps) {
-  let mode;
-  if (
-    session.activities.length === 0 ||
-    session.activities[session.activities.length - 1].type === "rest"
-  ) {
-    mode = "lifting";
-  } else {
-    mode = "resting";
-  }
-
-  const [currentTime, setCurrentTime] = useState(() => new Date().getTime());
-  const [reps, setReps] = useState<number | null>(8);
-  const [weight, setWeight] = useState<number | null>(10);
-  const [error, setError] = useState<string | null>(null);
-
-  const sessionStartTime = useMemo(
-    () => new Date(session.date).getTime(),
-    [session.date],
-  );
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date().getTime());
-    }, 500);
-    return () => clearInterval(interval);
-  }, []);
-
-  const sessionDuration = currentTime - sessionStartTime;
-
-  function handleAddActivity(reps: number | null, weight: number | null) {
-    if (reps === null || weight === null) {
-      setError("Reps and weight must be provided.");
-      return;
-    }
-    setError(null);
-    const updatedSession = produce(session, (draft) => {
-      draft.activities.push({
-        type: "set",
-        reps,
-        weight,
-      });
-    });
-    onChange(updatedSession);
-  }
-
-  function handleChangeWeight(event: React.ChangeEvent<HTMLInputElement>) {
-    const value = event.target.value;
-    setWeight(value === "" ? null : Number(value));
-  }
-
-  function handleChangeReps(event: React.ChangeEvent<HTMLInputElement>) {
-    const value = event.target.value;
-    setReps(value === "" ? null : Math.round(Number(value)));
-  }
-
-  return (
-    <Stack className={styles.trainingSessionInterface}>
-      <div>Mode: {mode}</div>
-      <div>Session time: {formatTime(sessionDuration)}</div>
-      <div className={styles.inputGroupWeight}>
-        <input
-          className={styles.inputWeight}
-          type="number"
-          value={weight ?? ""}
-          onChange={handleChangeWeight}
-        />
-        kg
-      </div>
-      <div className={styles.inputGroupReps}>
-        <input
-          className={styles.inputReps}
-          type="number"
-          value={reps ?? ""}
-          step={1}
-          onChange={handleChangeReps}
-        />{" "}
-        reps
-      </div>
-      {error && <div className={styles.error}>{error}</div>}
-      <div className={classButtonGroup}>
-        <Button onClick={() => handleAddActivity(reps, weight)}>
-          Add Activity
-        </Button>
-      </div>
-      <div>Logged sets:</div>
-      <div>
-        {session.activities.map((activity, index) => (
-          <div key={index}>
-            {activity.type === "set" && (
-              <div>
-                {activity.reps} reps at {activity.weight}kg
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className={classButtonGroup}>
-        <Button onClick={onClickCancel}>Cancel</Button>
-        <Button
-          variant="primary"
-          onClick={() => onCommit(session)}
-          disabled={session.activities.length === 0}
-        >
-          Commit Session
-        </Button>
-      </div>
-    </Stack>
-  );
-}
-
-function formatTime(time: number) {
-  const seconds = Math.floor(time / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  const remainingSeconds = seconds % 60;
-  const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
-  const formattedMinutes = remainingMinutes.toString().padStart(2, "0");
-  const formattedHours = hours.toString().padStart(2, "0");
-  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 }
 
 function SessionWeight({ session }: { session: TrainingTrackerSession }) {

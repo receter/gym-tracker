@@ -2,30 +2,6 @@
   position: relative;
 }
 
-.trainingSessionInterface {
-  border: 1px solid #ddd;
-  border-radius: var(--sys42-border-radius-md);
-  background-color: #f9f9f9;
-  padding: 20px;
-}
-
-.inputWeight,
-.inputReps {
-  display: block;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  padding: 10px;
-  font-size: 16px;
-}
-
-.inputGroupWeight,
-.inputGroupReps {
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-}
-
 .backButton {
   position: absolute;
   top: 0;
