@@ -1,5 +1,3 @@
-import { Stack } from "@sys42/ui";
-
 import styles from "./styles.module.css";
 
 export function TrackersList({
@@ -10,7 +8,7 @@ export function TrackersList({
   onItemClick: (tracker: TrainingMachine) => void;
 }) {
   return (
-    <Stack className={styles.trackersList}>
+    <div className={styles.trackersList}>
       {trackers.map((tracker) => (
         <TrackersListItem
           key={tracker.id}
@@ -18,7 +16,7 @@ export function TrackersList({
           onClick={() => onItemClick(tracker)}
         />
       ))}
-    </Stack>
+    </div>
   );
 }
 
@@ -26,12 +24,15 @@ export function TrackersListItem({
   tracker,
   onClick,
 }: {
-  tracker: TrainingMachine;
+  tracker: TrainingTracker;
   onClick: () => void;
 }) {
   return (
     <div className={styles.trackerListItem} onClick={onClick}>
-      {tracker.name}
+      <div className={styles.trackerListItemName}>{tracker.name}</div>
+      <div className={styles.trackerListItemSub}>
+        {tracker.sessions.length} Sessions
+      </div>
     </div>
   );
 }
