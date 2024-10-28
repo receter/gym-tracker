@@ -1,14 +1,15 @@
 .trainingSessionInterface {
-  border: 1px solid #ddd;
+}
+
+.set {
   border-radius: var(--sys42-border-radius-md);
-  background-color: #f9f9f9;
-  padding: 20px;
+  background: var(--color-surface-container);
+  padding: var(--sys42-spacing-lg);
 }
 
 .inputWeight,
 .inputReps {
   display: block;
-  border: 1px solid #ccc;
   border-radius: var(--sys42-border-radius-md);
   padding: 1rem;
   width: 100%;
@@ -19,10 +20,10 @@
 .inputGroupReps {
   display: flex;
   align-items: baseline;
-  gap: 1rem;
+  gap: var(--sys42-spacing-sm);
 }
 
 .weightAndReps {
   display: flex;
-  gap: var(--sys42-spacing-sm);
+  gap: var(--sys42-spacing-md);
 }

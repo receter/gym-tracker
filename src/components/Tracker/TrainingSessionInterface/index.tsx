@@ -15,6 +15,8 @@ type TrainingSessionInterfaceProps = {
   onChange: (session: TrainingTrackerSessionPrototype) => void;
   onCommit: (session: TrainingTrackerSessionPrototype) => void;
   onClickCancel: () => void;
+  defaultWeight?: number;
+  defaultReps?: number;
 };
 
 export function TrainingSessionInterface({
@@ -22,11 +24,13 @@ export function TrainingSessionInterface({
   onChange,
   onCommit,
   onClickCancel,
+  defaultReps = 8,
+  defaultWeight = 10,
 }: TrainingSessionInterfaceProps) {
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(() => new Date().getTime());
-  const [reps, setReps] = useState<number | null>(8);
-  const [weight, setWeight] = useState<number | null>(10);
+  const [reps, setReps] = useState<number | null>(defaultReps);
+  const [weight, setWeight] = useState<number | null>(defaultWeight);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"resting" | "lifting" | "idle">("idle");
 
@@ -79,16 +83,17 @@ export function TrainingSessionInterface({
 
   return (
     <Stack className={styles.trainingSessionInterface}>
-      <div>Mode: {mode}</div>
-      {sessionDuration !== null && (
-        <div>Session time: {formatTime(sessionDuration)}</div>
-      )}
       {mode === "idle" && <Button onClick={handleClickStart}>Start</Button>}
       {mode === "resting" && (
-        <Button onClick={handleClickStartNextSet}>Start next set</Button>
+        <Stack className={styles.set}>
+          <div>
+            <strong>Resting...</strong>
+          </div>
+          <Button onClick={handleClickStartNextSet}>Start next set</Button>
+        </Stack>
       )}
       {mode === "lifting" && (
-        <div>
+        <Stack className={styles.set}>
           <div className={styles.weightAndReps}>
             <div className={styles.inputGroupReps}>
               <input
@@ -112,24 +117,15 @@ export function TrainingSessionInterface({
           </div>
           {error && <div className={styles.error}>{error}</div>}
           <div className={classButtonGroup}>
-            <Button onClick={() => handleAddActivity(reps, weight)}>
-              Add Activity
+            <Button
+              variant="primary"
+              onClick={() => handleAddActivity(reps, weight)}
+            >
+              Log set
             </Button>
           </div>
-        </div>
+        </Stack>
       )}
-      <div>Logged sets:</div>
-      <div>
-        {session.activities.map((activity, index) => (
-          <div key={index}>
-            {activity.type === "set" && (
-              <div>
-                {activity.reps} reps at {activity.weight}kg
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
       <div className={classButtonGroup}>
         <Button onClick={onClickCancel}>Cancel</Button>
         <Button
@@ -139,6 +135,25 @@ export function TrainingSessionInterface({
         >
           Commit Session
         </Button>
+      </div>
+      <div>
+        <h2>Debug</h2>
+        <div>Mode: {mode}</div>
+        {sessionDuration !== null && (
+          <div>Session time: {formatTime(sessionDuration)}</div>
+        )}
+        <div>Logged sets:</div>
+        <div>
+          {session.activities.map((activity, index) => (
+            <div key={index}>
+              {activity.type === "set" && (
+                <div>
+                  {activity.reps} reps at {activity.weight}kg
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </Stack>
   );

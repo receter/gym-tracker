@@ -1,6 +1,6 @@
 import { Button, Stack, TextLinkButton } from "@sys42/ui";
 import { produce } from "immer";
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 
 import { formatTime, getNextIdForItems } from "../../utils";
 import styles from "./styles.module.css";
@@ -22,6 +22,19 @@ export function Tracker({
 }) {
   const [activeSession, setActiveSession] =
     useState<TrainingTrackerSessionPrototype | null>(null);
+
+  const [sessionDefaultReps, sessionDefaultWeight] = useMemo(() => {
+    if (tracker.sessions.length > 0) {
+      const lastSession = tracker.sessions[tracker.sessions.length - 1];
+      const lastSet = lastSession.activities.find(
+        (activity) => activity.type === "set",
+      );
+      if (lastSet) {
+        return [lastSet.reps, lastSet.weight];
+      }
+    }
+    return [];
+  }, [tracker]);
 
   function handleClickStartSession() {
     const newSession: TrainingTrackerSessionPrototype = {
@@ -69,6 +82,8 @@ export function Tracker({
   if (activeSession) {
     return (
       <TrainingSessionInterface
+        defaultWeight={sessionDefaultWeight}
+        defaultReps={sessionDefaultReps}
         session={activeSession}
         onChange={(session) => setActiveSession(session)}
         onCommit={handleCommitSession}

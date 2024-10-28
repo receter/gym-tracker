@@ -7,24 +7,27 @@
   top: 0;
   right: 0;
   border-radius: 50%;
-  background: #efefef;
+  background: var(--color-secondary-container);
   padding: 1rem;
   width: 1rem;
   height: 1rem;
-  color: #5b5b5b;
+  color: var(--color-on-secondary-container);
   font-weight: bold;
   line-height: 1;
   text-align: center;
 }
 
 .backButton:hover {
-  background: #d0d0d0;
+  background-color: color-mix(
+    in srgb,
+    var(--color-secondary-container),
+    var(--color-secondary) 8%
+  );
 }
 
 .session {
-  border: 1px solid #ddd;
   border-radius: var(--sys42-border-radius-md);
-  background-color: #efefef;
+  background-color: var(--color-surface-container);
   padding: 1rem;
 }
 

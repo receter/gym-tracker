@@ -3,8 +3,8 @@
 
 .trackerListItem {
   cursor: pointer;
-  border: 1px solid #ddd;
-  border-radius: var(--sys42-border-radius-sm);
-  background: #efefef;
+  border-radius: var(--sys42-border-radius-md);
+  background: var(--color-surface-container);
   padding: var(--sys42-spacing-md);
+  color: var(--color-on-surface);
 }
