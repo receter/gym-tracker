@@ -4,8 +4,8 @@ export function TrackersList({
   trackers,
   onItemClick,
 }: {
-  trackers: TrainingMachine[];
-  onItemClick: (tracker: TrainingMachine) => void;
+  trackers: TrainingTracker[];
+  onItemClick: (tracker: TrainingTracker) => void;
 }) {
   return (
     <div className={styles.trackersList}>
