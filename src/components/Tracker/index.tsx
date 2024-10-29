@@ -5,6 +5,7 @@ import { produce } from "immer";
 import { Fragment, useMemo, useState } from "react";
 
 import { formatTime, getNextIdForItems } from "../../utils";
+import { ResourceList } from "../ResourceList";
 import styles from "./styles.module.css";
 import {
   TrainingSessionInterface,
@@ -106,7 +107,7 @@ export function Tracker({
         </Button>
       </div>
 
-      <Stack spacing="lg" className={styles.sessions}>
+      <ResourceList>
         {tracker.sessions.toReversed().map((session) => {
           const sessionStart = new Date(session.date);
           const sessionEnd = new Date(session.dateEnd);
@@ -120,7 +121,7 @@ export function Tracker({
               .length;
 
           return (
-            <div className={styles.session} key={session.date}>
+            <ResourceList.Item key={session.date} className={styles.session}>
               <div>
                 <div className={styles.sessionActivities}>
                   {session.activities.length === 0 && "0"}
@@ -144,8 +145,7 @@ export function Tracker({
                   ))}
                 </div>
                 <div className={styles.durationAndWeight}>
-                  <SessionWeight session={session} />
-                  {", "}
+                  Duration{" "}
                   <span
                     className={styles.sessionDuration}
                     title={formattedStartDate}
@@ -153,6 +153,7 @@ export function Tracker({
                     {formatTime(sessionDuration)}
                   </span>
                   {", "}
+                  Avg. resting{" "}
                   <span
                     className={styles.avarageRestDuration}
                     title="Avarage rest duration"
@@ -161,16 +162,20 @@ export function Tracker({
                   </span>
                 </div>
               </div>
+              <SessionWeight
+                className={styles.sessionWeight}
+                session={session}
+              />
               <Button
                 className={styles.deleteButton}
                 onClick={() => handleDeleteSession(session.id)}
               >
                 <FontAwesomeIcon icon={faTrashCan} />
               </Button>
-            </div>
+            </ResourceList.Item>
           );
         })}
-      </Stack>
+      </ResourceList>
       <div className={styles.footer}>
         <Button onClick={handleClickDelete}>Delete this tracker</Button>
       </div>
@@ -178,20 +183,31 @@ export function Tracker({
   );
 }
 
-function SessionWeight({ session }: { session: TrainingTrackerSession }) {
+function SessionWeight({
+  session,
+  className,
+}: {
+  session: TrainingTrackerSession;
+  className?: string;
+}) {
   const setWeights = session.activities.reduce(
     (weights, activity) =>
       activity.type === "set" ? [...weights, activity.weight] : weights,
     [] as number[],
   );
-  // const totalSetWeight = setWeights.reduce((a, b) => a + b, 0);
   const isAllSetWeightsEqual = setWeights.every(
     (weight) => weight === setWeights[0],
   );
   const minWeight = Math.min(...setWeights);
   const maxWeight = Math.max(...setWeights);
+
+  // If not all sets are equal show like 10kg/12kg/10kg… in the title
+  const title = !isAllSetWeightsEqual
+    ? setWeights.map((t) => t + "kg").join("/")
+    : undefined;
+
   return (
-    <span>
+    <span className={className} title={title}>
       {isAllSetWeightsEqual
         ? setWeights[0] + "kg"
         : minWeight + "kg - " + maxWeight + "kg"}

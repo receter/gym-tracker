@@ -1,0 +1,20 @@
+.resourceList {
+}
+
+.resourceListItem {
+  --padding-horizontal: var(--sys42-spacing-md);
+  display: flex;
+  justify-content: space-between;
+  margin-right: calc(var(--padding-horizontal) * -1);
+  margin-left: calc(var(--padding-horizontal) * -1);
+  border-radius: var(--sys42-border-radius-md);
+  padding: var(--padding-horizontal) var(--sys42-spacing-md);
+}
+
+.resourceListItem_hasOnClick {
+  cursor: pointer;
+}
+
+.resourceListItem:hover {
+  background-color: var(--color-surface-container);
+}

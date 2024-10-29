@@ -11,8 +11,8 @@ import { usePersistentState } from "@sys42/utils";
 import { produce } from "immer";
 import { useState } from "react";
 
+import { Home } from "./components/Home";
 import { Tracker } from "./components/Tracker";
-import { TrackersList } from "./components/TrackersList";
 import { getNextIdForItems } from "./utils";
 
 type AppMode = "trackers" | "new-tracker" | "tracker";
@@ -81,18 +81,14 @@ function App() {
   return (
     <>
       {appMode === "trackers" && (
-        <Stack>
-          <TrackersList
-            trackers={trackers}
-            onItemClick={(tracker) => {
-              setActiveTrackerId(tracker.id);
-              setAppMode("tracker");
-            }}
-          />
-          <Button variant="primary" onClick={handleClickAddTracker}>
-            Add tracker
-          </Button>
-        </Stack>
+        <Home
+          trackers={trackers}
+          onClickAddTracker={handleClickAddTracker}
+          onClickTracker={(tracker) => {
+            setActiveTrackerId(tracker.id);
+            setAppMode("tracker");
+          }}
+        />
       )}
 
       {appMode === "new-tracker" && (

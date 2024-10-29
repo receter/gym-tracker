@@ -1,23 +1,11 @@
 .trackersList {
 }
 
-.trackerListItem {
-  cursor: pointer;
-  margin-right: calc(var(--sys42-spacing-sm) * -1);
-  margin-left: calc(var(--sys42-spacing-sm) * -1);
-  border-bottom: 1px solid var(--color-outline-variant);
-  padding: var(--sys42-spacing-md) var(--sys42-spacing-sm);
-}
-
-.trackerListItem:hover {
-  background-color: var(--color-surface-container);
-}
-
-.trackerListItemName {
+.trackerName {
   font-weight: bold;
   font-size: large;
 }
 
-.trackerListItemSub {
+.trackerSub {
   color: var(--color-on-surface-variant);
 }

@@ -1,38 +1,26 @@
+import { ResourceList } from "../ResourceList";
 import styles from "./styles.module.css";
 
 export function TrackersList({
   trackers,
-  onItemClick,
+  onClickItem: onItemClick,
 }: {
   trackers: TrainingTracker[];
-  onItemClick: (tracker: TrainingTracker) => void;
+  onClickItem: (tracker: TrainingTracker) => void;
 }) {
   return (
-    <div className={styles.trackersList}>
+    <ResourceList className={styles.trackersList}>
       {trackers.map((tracker) => (
-        <TrackersListItem
-          key={tracker.id}
-          tracker={tracker}
+        <ResourceList.Item
           onClick={() => onItemClick(tracker)}
-        />
+          key={tracker.id}
+        >
+          <div className={styles.trackerName}>{tracker.name}</div>
+          <div className={styles.trackerSub}>
+            {tracker.sessions.length} Sessions
+          </div>
+        </ResourceList.Item>
       ))}
-    </div>
-  );
-}
-
-export function TrackersListItem({
-  tracker,
-  onClick,
-}: {
-  tracker: TrainingTracker;
-  onClick: () => void;
-}) {
-  return (
-    <div className={styles.trackerListItem} onClick={onClick}>
-      <div className={styles.trackerListItemName}>{tracker.name}</div>
-      <div className={styles.trackerListItemSub}>
-        {tracker.sessions.length} Sessions
-      </div>
-    </div>
+    </ResourceList>
   );
 }
