@@ -7,23 +7,28 @@
   padding: var(--sys42-spacing-lg);
 }
 
-.inputWeight,
-.inputReps {
+.inputWeightInput,
+.inputRepsInput {
   display: block;
   border-radius: var(--sys42-border-radius-md);
   padding: 1rem;
   width: 100%;
-  font-size: 1.375rem;
+  font-size: large;
 }
 
-.inputGroupWeight,
-.inputGroupReps {
+.inputWeight,
+.inputReps {
   display: flex;
   align-items: baseline;
   gap: var(--sys42-spacing-sm);
 }
 
-.weightAndReps {
+.restingDuration {
+  font-size: large;
+}
+
+.changeableWeight {
   display: flex;
-  gap: var(--sys42-spacing-md);
+  align-items: center;
+  gap: var(--sys42-spacing-sm);
 }

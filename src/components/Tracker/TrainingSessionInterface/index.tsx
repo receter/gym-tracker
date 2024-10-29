@@ -33,14 +33,16 @@ export function TrainingSessionInterface({
   const [reps, setReps] = useState<number | null>(defaultReps);
   const [weight, setWeight] = useState<number | null>(defaultWeight);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"resting" | "lifting" | "idle">("idle");
+  const [mode, setMode] = useState<"resting" | "working" | "idle">("idle");
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const intervallCallback = () => {
       setCurrentTime(new Date().getTime());
-    }, 500);
+    };
+    const interval = setInterval(intervallCallback, 500);
+    intervallCallback();
     return () => clearInterval(interval);
-  }, []);
+  }, [sessionStartTime, restingStartTime]);
 
   const sessionDuration = sessionStartTime
     ? currentTime - sessionStartTime
@@ -75,7 +77,7 @@ export function TrainingSessionInterface({
   }
 
   function handleClickStartNextSet() {
-    setMode("lifting");
+    setMode("working");
     if (restingStartTime) {
       const restingDuration = currentTime - restingStartTime;
       const updatedSession = produce(session, (draft) => {
@@ -91,77 +93,56 @@ export function TrainingSessionInterface({
 
   function handleClickStart() {
     setSessionStartTime(new Date().getTime());
-    setMode("lifting");
+    setMode("working");
   }
 
   return (
     <Stack className={styles.trainingSessionInterface}>
       {mode === "resting" && (
         <Stack className={styles.set}>
-          <div>
-            <h2>Resting</h2>
-            {restingStartTime && (
-              <div>{formatTime(currentTime - restingStartTime)}</div>
-            )}
+          <h2>Resting</h2>
+          {restingStartTime && (
+            <div className={styles.restingDuration}>
+              {formatTime(currentTime - restingStartTime)}
+            </div>
+          )}
+          <ChangeableWeight weight={weight} onChange={handleChangeWeight} />
+          <div className={classButtonGroup}>
+            <Button variant="primary" onClick={handleClickStartNextSet}>
+              Start next set
+            </Button>
+            <Button onClick={() => onCommit(session)}>Commit Session</Button>
+            <Button onClick={onClickCancel}>Cancel</Button>
           </div>
-          <Button variant="primary" onClick={handleClickStartNextSet}>
-            Start next set
-          </Button>
         </Stack>
       )}
-      {(mode === "lifting" || mode === "idle") && (
+      {(mode === "working" || mode === "idle") && (
         <Stack className={styles.set}>
-          {mode === "lifting" && <h2>Lifting</h2>}
-          {mode === "idle" && <h2>Start session</h2>}
-          <div className={styles.weightAndReps}>
-            <div className={styles.inputGroupReps}>
-              <input
-                className={styles.inputReps}
-                type="number"
-                value={reps ?? ""}
-                step={1}
-                onChange={handleChangeReps}
-              />{" "}
-              reps
-            </div>
-            <div className={styles.inputGroupWeight}>
-              <input
-                className={styles.inputWeight}
-                type="number"
-                value={weight ?? ""}
-                onChange={handleChangeWeight}
-              />
-              kg
-            </div>
-          </div>
           {error && <div className={styles.error}>{error}</div>}
-          <div className={classButtonGroup}>
-            {mode !== "idle" && (
+          {mode === "idle" && (
+            <>
+              <h2>Start session</h2>
+              <InputWeight weight={weight} onChange={handleChangeWeight} />
+              <Button variant="primary" onClick={handleClickStart}>
+                Start
+              </Button>
+            </>
+          )}
+          {mode === "working" && (
+            <>
+              <h2>Working</h2>
+              <div>Weight: {weight}</div>
+              <InputReps reps={reps} onChange={handleChangeReps} />
               <Button
                 variant="primary"
                 onClick={() => handleAddActivity(reps, weight)}
               >
                 Log set
               </Button>
-            )}
-            {mode === "idle" && (
-              <Button variant="primary" onClick={handleClickStart}>
-                Start
-              </Button>
-            )}
-          </div>
+            </>
+          )}
         </Stack>
       )}
-      <div className={classButtonGroup}>
-        <Button onClick={onClickCancel}>Cancel</Button>
-        <Button
-          variant="primary"
-          onClick={() => onCommit(session)}
-          disabled={session.activities.length === 0}
-        >
-          Commit Session
-        </Button>
-      </div>
       <div>
         <h2>Debug</h2>
         <div>Mode: {mode}</div>
@@ -185,5 +166,77 @@ export function TrainingSessionInterface({
         </div>
       </div>
     </Stack>
+  );
+}
+
+function InputWeight({
+  weight,
+  autoFocus,
+  onChange,
+}: {
+  weight: number | null;
+  autoFocus?: boolean;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className={styles.inputWeight}>
+      <input
+        className={styles.inputWeightInput}
+        autoFocus={autoFocus}
+        type="number"
+        value={weight ?? ""}
+        onChange={onChange}
+      />
+      kg
+    </div>
+  );
+}
+
+function InputReps({
+  reps,
+  onChange,
+}: {
+  reps: number | null;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className={styles.inputReps}>
+      <input
+        className={styles.inputRepsInput}
+        type="number"
+        value={reps ?? ""}
+        step={1}
+        onChange={onChange}
+      />{" "}
+      reps
+    </div>
+  );
+}
+
+function ChangeableWeight({
+  weight,
+  onChange,
+}: {
+  weight: number | null;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  const [isChanging, setIsChanging] = useState(false);
+  return (
+    <div className={styles.changeableWeight}>
+      {isChanging ? (
+        <InputWeight autoFocus={true} weight={weight} onChange={onChange} />
+      ) : (
+        <>
+          <div>Weight: {weight}</div>
+          <Button
+            onClick={() => {
+              setIsChanging(true);
+            }}
+          >
+            Change
+          </Button>
+        </>
+      )}
+    </div>
   );
 }

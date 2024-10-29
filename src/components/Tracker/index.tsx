@@ -1,4 +1,6 @@
-import { Button, Stack, TextLinkButton } from "@sys42/ui";
+import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button, classButtonGroup, Stack } from "@sys42/ui";
 import { produce } from "immer";
 import { Fragment, useMemo, useState } from "react";
 
@@ -93,22 +95,29 @@ export function Tracker({
   }
 
   return (
-    <Stack className={styles.tracker}>
-      <TextLinkButton className={styles.backButton} onClick={onBack}>
-        Back
-      </TextLinkButton>
+    <Stack spacing="lg" className={styles.tracker}>
       <h1>{tracker.name}</h1>
+      <div className={classButtonGroup}>
+        <Button className={styles.backButton} onClick={onBack}>
+          Back
+        </Button>
+        <Button variant="primary" onClick={handleClickStartSession}>
+          Start session
+        </Button>
+      </div>
 
-      <Button variant="primary" onClick={handleClickStartSession}>
-        Start session
-      </Button>
-
-      <div className={styles.sessions}>
+      <Stack spacing="lg" className={styles.sessions}>
         {tracker.sessions.toReversed().map((session) => {
           const sessionStart = new Date(session.date);
           const sessionEnd = new Date(session.dateEnd);
           const sessionDuration = sessionEnd.getTime() - sessionStart.getTime();
           const formattedStartDate = sessionStart.toLocaleString();
+          const avarageRestDuration =
+            session.activities
+              .filter((activity) => activity.type === "rest")
+              .reduce((sum, activity) => sum + activity.duration, 0) /
+            session.activities.filter((activity) => activity.type === "rest")
+              .length;
 
           return (
             <div className={styles.session} key={session.date}>
@@ -119,14 +128,11 @@ export function Tracker({
                     <Fragment key={index}>
                       {activity.type === "rest" && (
                         <span className={styles.rest}>
-                          ({formatTime(activity.duration)})
+                          {formatTime(activity.duration)}
                         </span>
                       )}
                       {activity.type === "set" && (
-                        <>
-                          {index !== 0 && "/"}
-                          {activity.reps}
-                        </>
+                        <span className={styles.set}>{activity.reps}</span>
                       )}
                       {activity.type === "superset" && (
                         <div>
@@ -138,29 +144,35 @@ export function Tracker({
                   ))}
                 </div>
                 <div className={styles.durationAndWeight}>
-                  <SessionWeight session={session} />{" "}
+                  <SessionWeight session={session} />
+                  {", "}
                   <span
                     className={styles.sessionDuration}
                     title={formattedStartDate}
                   >
                     {formatTime(sessionDuration)}
                   </span>
+                  {", "}
+                  <span
+                    className={styles.avarageRestDuration}
+                    title="Avarage rest duration"
+                  >
+                    {formatTime(avarageRestDuration)}
+                  </span>
                 </div>
               </div>
-              <TextLinkButton
+              <Button
                 className={styles.deleteButton}
                 onClick={() => handleDeleteSession(session.id)}
               >
-                Delete
-              </TextLinkButton>
+                <FontAwesomeIcon icon={faTrashCan} />
+              </Button>
             </div>
           );
         })}
-      </div>
-      <div>
-        <TextLinkButton onClick={handleClickDelete}>
-          Delete this tracker
-        </TextLinkButton>
+      </Stack>
+      <div className={styles.footer}>
+        <Button onClick={handleClickDelete}>Delete this tracker</Button>
       </div>
     </Stack>
   );
@@ -176,5 +188,13 @@ function SessionWeight({ session }: { session: TrainingTrackerSession }) {
   const isAllSetWeightsEqual = setWeights.every(
     (weight) => weight === setWeights[0],
   );
-  return <span>{isAllSetWeightsEqual ? setWeights[0] : "Mixed"} kg</span>;
+  const minWeight = Math.min(...setWeights);
+  const maxWeight = Math.max(...setWeights);
+  return (
+    <span>
+      {isAllSetWeightsEqual
+        ? setWeights[0] + "kg"
+        : minWeight + "kg - " + maxWeight + "kg"}
+    </span>
+  );
 }

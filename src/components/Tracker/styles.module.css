@@ -2,25 +2,17 @@
   position: relative;
 }
 
-.backButton {
-}
-
-.backButton:hover {
-}
-
 .sessions {
-  border-radius: var(--sys42-border-radius-md);
-  background: var(--color-surface-container);
 }
 
 .session {
   display: flex;
   justify-content: space-between;
-  padding: 1rem;
+  align-items: center;
 }
 
 .sessionActivities {
-  font-size: 2rem;
+  font-size: large;
 }
 
 .durationAndWeight {
@@ -32,9 +24,30 @@
 }
 
 .deleteButton {
-  color: var(--color-on-surface);
 }
 
 .rest {
-  opacity: 0.33;
+  display: none;
+  font-size: small;
+}
+
+.set {
+  font-weight: bold;
+}
+
+.set + .rest:before {
+  content: " / ";
+}
+
+.rest + .set:before {
+  content: " / ";
+}
+
+.set + .set:before {
+  content: " / ";
+}
+
+.footer {
+  border-top: 1px solid var(--color-outline-variant);
+  padding-top: var(--sys42-spacing-lg);
 }
