@@ -1,6 +1,6 @@
-import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
+import { faTrashCan, faPen } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, classButtonGroup, Stack } from "@sys42/ui";
+import { Button, classButtonGroup, Stack, TextInput } from "@sys42/ui";
 import { produce } from "immer";
 import { Fragment, useMemo, useState } from "react";
 
@@ -25,6 +25,8 @@ export function Tracker({
 }) {
   const [activeSession, setActiveSession] =
     useState<TrainingTrackerSessionPrototype | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState(tracker.name);
 
   const [sessionDefaultReps, sessionDefaultWeight] = useMemo(() => {
     if (tracker.sessions.length > 0) {
@@ -82,6 +84,14 @@ export function Tracker({
       onDelete(tracker.id);
   }
 
+  function handleSaveName() {
+    const updatedTracker = produce(tracker, (draft) => {
+      draft.name = editedName;
+    });
+    onChange(updatedTracker);
+    setIsEditingName(false);
+  }
+
   if (activeSession) {
     return (
       <TrainingSessionInterface
@@ -97,7 +107,30 @@ export function Tracker({
 
   return (
     <Stack spacing="lg" className={styles.tracker}>
-      <h1>{tracker.name}</h1>
+      <div className={styles.trackerHeader}>
+        {isEditingName ? (
+          <div className={styles.editNameContainer}>
+            <TextInput
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+            />
+            <Button variant="primary" onClick={handleSaveName}>
+              Save
+            </Button>
+            <Button onClick={() => setIsEditingName(false)}>Cancel</Button>
+          </div>
+        ) : (
+          <>
+            <h1>{tracker.name}</h1>
+            <Button
+              className={styles.editButton}
+              onClick={() => setIsEditingName(true)}
+            >
+              <FontAwesomeIcon icon={faPen} />
+            </Button>
+          </>
+        )}
+      </div>
       <div className={classButtonGroup}>
         <Button className={styles.backButton} onClick={onBack}>
           Back
