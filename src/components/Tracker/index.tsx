@@ -1,6 +1,12 @@
-import { faTrashCan, faPen } from "@fortawesome/free-regular-svg-icons";
+import { faEdit, faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, classButtonGroup, Stack, TextInput } from "@sys42/ui";
+import {
+  Button,
+  classButtonGroup,
+  Stack,
+  TextInput,
+  TextLinkButton,
+} from "@sys42/ui";
 import { produce } from "immer";
 import { Fragment, useMemo, useState } from "react";
 
@@ -26,7 +32,7 @@ export function Tracker({
   const [activeSession, setActiveSession] =
     useState<TrainingTrackerSessionPrototype | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState(tracker.name);
+  const [editedName, setEditedName] = useState("");
 
   const [sessionDefaultReps, sessionDefaultWeight] = useMemo(() => {
     if (tracker.sessions.length > 0) {
@@ -84,6 +90,11 @@ export function Tracker({
       onDelete(tracker.id);
   }
 
+  function handleClickEditButton() {
+    setEditedName(tracker.name);
+    setIsEditingName(true);
+  }
+
   function handleSaveName() {
     const updatedTracker = produce(tracker, (draft) => {
       draft.name = editedName;
@@ -122,12 +133,12 @@ export function Tracker({
         ) : (
           <>
             <h1>{tracker.name}</h1>
-            <Button
+            <TextLinkButton
               className={styles.editButton}
-              onClick={() => setIsEditingName(true)}
+              onClick={handleClickEditButton}
             >
-              <FontAwesomeIcon icon={faPen} />
-            </Button>
+              <FontAwesomeIcon icon={faEdit} />
+            </TextLinkButton>
           </>
         )}
       </div>
