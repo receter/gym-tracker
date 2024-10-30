@@ -50,3 +50,18 @@
   --color-tertiary-fixed: #ffd7f3;
   --color-tertiary-fixed-dim: #e5bad9;
 }
+
+/* State Variables (not exported from Figma) */
+
+:root {
+  --color-hover-surface: color-mix(
+    in srgb,
+    var(--color-surface),
+    var(--color-on-surface) 8%
+  );
+  --color-hover-surface-variant: color-mix(
+    in srgb,
+    var(--color-surface-variant),
+    var(--color-on-surface-variant) 8%
+  );
+}

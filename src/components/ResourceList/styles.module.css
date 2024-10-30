@@ -16,5 +16,5 @@
 }
 
 .resourceListItem:hover {
-  background-color: var(--color-surface-container);
+  background-color: var(--color-hover-surface);
 }
