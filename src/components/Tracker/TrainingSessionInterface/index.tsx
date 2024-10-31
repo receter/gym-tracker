@@ -123,9 +123,12 @@ export function TrainingSessionInterface({
             <>
               <h2>Start session</h2>
               <InputWeight weight={weight} onChange={handleChangeWeight} />
-              <Button variant="primary" onClick={handleClickStart}>
-                Start
-              </Button>
+              <div className={classButtonGroup}>
+                <Button onClick={onClickCancel}>Back</Button>
+                <Button variant="primary" onClick={handleClickStart}>
+                  Start
+                </Button>
+              </div>
             </>
           )}
           {mode === "working" && (

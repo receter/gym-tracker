@@ -14,7 +14,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-regular-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "@sys42/ui": "^1.4.0",
+    "@sys42/ui": "^1.5.0",
     "@sys42/utils": "^1.3.0",
     "immer": "^10.1.1",
     "react": "^18.3.1",

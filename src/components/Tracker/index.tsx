@@ -1,11 +1,11 @@
-import { faEdit, faTrashCan } from "@fortawesome/free-regular-svg-icons";
+import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Button,
   classButtonGroup,
+  OverflowMenu,
   Stack,
   TextInput,
-  TextLinkButton,
 } from "@sys42/ui";
 import { produce } from "immer";
 import { Fragment, useMemo, useState } from "react";
@@ -133,12 +133,17 @@ export function Tracker({
         ) : (
           <>
             <h1>{tracker.name}</h1>
-            <TextLinkButton
-              className={styles.editButton}
-              onClick={handleClickEditButton}
-            >
-              <FontAwesomeIcon icon={faEdit} />
-            </TextLinkButton>
+            <OverflowMenu>
+              <OverflowMenu.Item onClick={handleClickEditButton}>
+                Edit name
+              </OverflowMenu.Item>
+              <OverflowMenu.Item
+                className={styles.deleteTracker}
+                onClick={handleClickDelete}
+              >
+                Delete tracker
+              </OverflowMenu.Item>
+            </OverflowMenu>
           </>
         )}
       </div>
@@ -220,9 +225,6 @@ export function Tracker({
           );
         })}
       </ResourceList>
-      <div className={styles.footer}>
-        <Button onClick={handleClickDelete}>Delete this tracker</Button>
-      </div>
     </Stack>
   );
 }
