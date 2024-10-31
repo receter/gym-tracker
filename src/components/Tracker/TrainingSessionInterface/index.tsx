@@ -3,6 +3,7 @@ import { produce } from "immer";
 import { useEffect, useState } from "react";
 
 import { formatTime } from "../../../utils";
+import { InputQuantity } from "../../InputQuantity";
 import styles from "./styles.module.css";
 
 export type TrainingTrackerSessionPrototype = Omit<
@@ -30,9 +31,8 @@ export function TrainingSessionInterface({
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [restingStartTime, setRestingStartTime] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(() => new Date().getTime());
-  const [reps, setReps] = useState<number | null>(defaultReps);
-  const [weight, setWeight] = useState<number | null>(defaultWeight);
-  const [error, setError] = useState<string | null>(null);
+  const [reps, setReps] = useState<number>(defaultReps);
+  const [weight, setWeight] = useState<number>(defaultWeight);
   const [mode, setMode] = useState<"resting" | "working" | "idle">("idle");
 
   useEffect(() => {
@@ -48,11 +48,7 @@ export function TrainingSessionInterface({
     ? currentTime - sessionStartTime
     : null;
 
-  function handleAddActivity(reps: number | null, weight: number | null) {
-    if (reps === null || weight === null) {
-      setError("Reps and weight must be provided.");
-      return;
-    }
+  function handleAddActivity(reps: number, weight: number) {
     const updatedSession = produce(session, (draft) => {
       draft.activities.push({
         type: "set",
@@ -60,20 +56,17 @@ export function TrainingSessionInterface({
         weight,
       });
     });
-    setError(null);
     setMode("resting");
     setRestingStartTime(new Date().getTime());
     onChange(updatedSession);
   }
 
-  function handleChangeWeight(event: React.ChangeEvent<HTMLInputElement>) {
-    const value = event.target.value;
-    setWeight(value === "" ? null : Number(value));
+  function handleChangeWeight(weight: number) {
+    setWeight(weight);
   }
 
-  function handleChangeReps(event: React.ChangeEvent<HTMLInputElement>) {
-    const value = event.target.value;
-    setReps(value === "" ? null : Math.round(Number(value)));
+  function handleChangeReps(value: number) {
+    setReps(value);
   }
 
   function handleClickStartNextSet() {
@@ -118,7 +111,6 @@ export function TrainingSessionInterface({
       )}
       {(mode === "working" || mode === "idle") && (
         <Stack className={styles.set}>
-          {error && <div className={styles.error}>{error}</div>}
           {mode === "idle" && (
             <>
               <h2>Start session</h2>
@@ -135,7 +127,12 @@ export function TrainingSessionInterface({
             <>
               <h2>Working</h2>
               <div>Weight: {weight}</div>
-              <InputReps reps={reps} onChange={handleChangeReps} />
+              <div>Reps: {reps}</div>
+              <InputQuantity
+                className={styles.inputRepsInput}
+                value={reps}
+                onChangeValue={handleChangeReps}
+              />
               <Button
                 variant="primary"
                 onClick={() => handleAddActivity(reps, weight)}
@@ -177,42 +174,17 @@ function InputWeight({
   autoFocus,
   onChange,
 }: {
-  weight: number | null;
+  weight: number;
   autoFocus?: boolean;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (weight: number) => void;
 }) {
   return (
-    <div className={styles.inputWeight}>
-      <input
-        className={styles.inputWeightInput}
-        autoFocus={autoFocus}
-        type="number"
-        value={weight ?? ""}
-        onChange={onChange}
-      />
-      kg
-    </div>
-  );
-}
-
-function InputReps({
-  reps,
-  onChange,
-}: {
-  reps: number | null;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-}) {
-  return (
-    <div className={styles.inputReps}>
-      <input
-        className={styles.inputRepsInput}
-        type="number"
-        value={reps ?? ""}
-        step={1}
-        onChange={onChange}
-      />{" "}
-      reps
-    </div>
+    <InputQuantity
+      autoFocus={autoFocus}
+      value={weight}
+      onChangeValue={onChange}
+      className={styles.inputWeight}
+    />
   );
 }
 
@@ -220,8 +192,8 @@ function ChangeableWeight({
   weight,
   onChange,
 }: {
-  weight: number | null;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  weight: number;
+  onChange: (weight: number) => void;
 }) {
   const [isChanging, setIsChanging] = useState(false);
   return (

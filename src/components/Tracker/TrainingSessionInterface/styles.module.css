@@ -7,20 +7,9 @@
   padding: var(--sys42-spacing-lg);
 }
 
-.inputWeightInput,
-.inputRepsInput {
-  display: block;
-  border-radius: var(--sys42-border-radius-md);
-  padding: 1rem;
-  width: 100%;
-  font-size: large;
-}
-
 .inputWeight,
 .inputReps {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sys42-spacing-sm);
+  font-size: large;
 }
 
 .restingDuration {
