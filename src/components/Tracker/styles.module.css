@@ -52,7 +52,28 @@
   content: " / ";
 }
 
-.footer {
-  border-top: 1px solid var(--color-outline-variant);
-  padding-top: var(--sys42-spacing-lg);
+.trackerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sys42-spacing-md);
+}
+
+.editButton {
+  opacity: 0.5;
+  color: inherit;
+}
+
+.editButton:hover {
+  opacity: 1;
+}
+
+.editNameContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--sys42-spacing-md);
+}
+
+.deleteTracker {
+  color: var(--color-error);
 }

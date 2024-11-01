@@ -1,6 +1,12 @@
 import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, classButtonGroup, Stack } from "@sys42/ui";
+import {
+  Button,
+  classButtonGroup,
+  OverflowMenu,
+  Stack,
+  TextInput,
+} from "@sys42/ui";
 import { produce } from "immer";
 import { Fragment, useMemo, useState } from "react";
 
@@ -25,6 +31,8 @@ export function Tracker({
 }) {
   const [activeSession, setActiveSession] =
     useState<TrainingTrackerSessionPrototype | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
 
   const [sessionDefaultReps, sessionDefaultWeight] = useMemo(() => {
     if (tracker.sessions.length > 0) {
@@ -59,8 +67,10 @@ export function Tracker({
     setActiveSession(null);
   }
 
-  function handleClickCancel() {
-    setActiveSession(null);
+  function handleClickDiscardSession() {
+    if (window.confirm("Are you sure you want to discard this session?")) {
+      setActiveSession(null);
+    }
   }
 
   function handleDeleteSession(sessionId: number) {
@@ -82,6 +92,19 @@ export function Tracker({
       onDelete(tracker.id);
   }
 
+  function handleClickEditButton() {
+    setEditedName(tracker.name);
+    setIsEditingName(true);
+  }
+
+  function handleSaveName() {
+    const updatedTracker = produce(tracker, (draft) => {
+      draft.name = editedName;
+    });
+    onChange(updatedTracker);
+    setIsEditingName(false);
+  }
+
   if (activeSession) {
     return (
       <TrainingSessionInterface
@@ -90,14 +113,42 @@ export function Tracker({
         session={activeSession}
         onChange={(session) => setActiveSession(session)}
         onCommit={handleCommitSession}
-        onClickCancel={handleClickCancel}
+        onClickDiscard={handleClickDiscardSession}
       />
     );
   }
 
   return (
     <Stack spacing="lg" className={styles.tracker}>
-      <h1>{tracker.name}</h1>
+      <div className={styles.trackerHeader}>
+        {isEditingName ? (
+          <div className={styles.editNameContainer}>
+            <TextInput
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+            />
+            <Button variant="primary" onClick={handleSaveName}>
+              Save
+            </Button>
+            <Button onClick={() => setIsEditingName(false)}>Cancel</Button>
+          </div>
+        ) : (
+          <>
+            <h1>{tracker.name}</h1>
+            <OverflowMenu>
+              <OverflowMenu.Item onClick={handleClickEditButton}>
+                Edit name
+              </OverflowMenu.Item>
+              <OverflowMenu.Item
+                className={styles.deleteTracker}
+                onClick={handleClickDelete}
+              >
+                Delete tracker
+              </OverflowMenu.Item>
+            </OverflowMenu>
+          </>
+        )}
+      </div>
       <div className={classButtonGroup}>
         <Button className={styles.backButton} onClick={onBack}>
           Back
@@ -176,9 +227,6 @@ export function Tracker({
           );
         })}
       </ResourceList>
-      <div className={styles.footer}>
-        <Button onClick={handleClickDelete}>Delete this tracker</Button>
-      </div>
     </Stack>
   );
 }

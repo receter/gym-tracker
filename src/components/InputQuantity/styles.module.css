@@ -1,0 +1,72 @@
+.inputQuantity {
+  display: flex;
+  gap: var(--sys42-spacing-sm);
+  max-width: 12rem;
+}
+
+.input {
+  box-sizing: border-box;
+  border: var(--sys42-input-text-border-width) solid
+    var(--sys42-input-text-border-color);
+  border-radius: var(--sys42-input-text-border-radius);
+  background: var(--sys42-input-text-background);
+  padding: calc(
+      var(--sys42-input-text-padding-vert) -
+        var(--sys42-input-text-border-width)
+    )
+    calc(
+      var(--sys42-input-text-padding-horiz) -
+        var(--sys42-input-text-border-width)
+    );
+  width: 100%;
+  font-size: 1em;
+  line-height: var(--sys42-input-text-line-height);
+}
+
+.input:focus,
+.input:focus-visible {
+  outline: var(--sys42-focus-outline);
+  outline-offset: var(--sys42-focus-outline-offset);
+}
+
+.input_intermediate {
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+
+.button {
+  display: block;
+  cursor: pointer;
+  box-sizing: content-box;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sys42-button-background);
+  padding: var(--sys42-button-padding-vert);
+  min-width: 1lh;
+  line-height: var(--sys42-button-line-height);
+}
+
+.button > svg {
+  vertical-align: middle;
+  height: 1em;
+}
+
+.button:hover {
+  background: var(--sys42-button-background--hover);
+}
+
+.button:active {
+  background: var(--sys42-button-background--active);
+}
+
+.button:disabled {
+  background: var(--sys42-button-background--disabled);
+}
+
+.button:focus {
+  outline: none;
+}
+
+.button:focus-visible {
+  outline: var(--sys42-focus-outline);
+  outline-offset: var(--sys42-focus-outline-offset);
+}
