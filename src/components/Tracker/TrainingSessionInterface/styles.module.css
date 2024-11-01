@@ -1,18 +1,8 @@
 .trainingSessionInterface {
 }
 
-.set {
-  border-radius: var(--sys42-border-radius-md);
-  background: var(--color-surface-container);
-  padding: var(--sys42-spacing-lg);
-}
-
 .inputWeight,
 .inputReps {
-  font-size: large;
-}
-
-.restingDuration {
   font-size: large;
 }
 
@@ -20,4 +10,28 @@
   display: flex;
   align-items: center;
   gap: var(--sys42-spacing-sm);
+}
+
+.activities {
+  margin-top: var(--sys42-spacing-lg);
+}
+
+.loggedActivity {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sys42-spacing-md);
+  border-radius: var(--sys42-border-radius-md);
+  background-color: var(--color-surface-container);
+  padding: var(--sys42-spacing-sm);
+}
+
+.loggedActivity + .loggedActivity {
+  margin-top: var(--sys42-spacing-md);
+}
+
+.classLeadingTrim {
+  position: relative;
+  top: calc((1lh - 1cap) / -2);
+  margin-bottom: calc((1lh - 1cap) * -1);
 }

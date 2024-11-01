@@ -22,3 +22,5 @@ export function formatTime(time: number) {
     return `${formattedHours}h ${formattedMinutes}m ${formattedSeconds}s`;
   }
 }
+
+export const isDebugEnabled = import.meta.env.VITE_IS_DEBUG === "true";

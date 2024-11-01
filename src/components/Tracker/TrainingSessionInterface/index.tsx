@@ -1,8 +1,14 @@
-import { Button, classButtonGroup, Stack } from "@sys42/ui";
+import {
+  Button,
+  classButtonGroup,
+  FormField,
+  FormFieldContext,
+  Stack,
+} from "@sys42/ui";
 import { produce } from "immer";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
-import { formatTime } from "../../../utils";
+import { formatTime, isDebugEnabled } from "../../../utils";
 import { InputQuantity } from "../../InputQuantity";
 import styles from "./styles.module.css";
 
@@ -15,7 +21,7 @@ type TrainingSessionInterfaceProps = {
   session: TrainingTrackerSessionPrototype;
   onChange: (session: TrainingTrackerSessionPrototype) => void;
   onCommit: (session: TrainingTrackerSessionPrototype) => void;
-  onClickCancel: () => void;
+  onClickDiscard: () => void;
   defaultWeight?: number;
   defaultReps?: number;
 };
@@ -24,7 +30,7 @@ export function TrainingSessionInterface({
   session,
   onChange,
   onCommit,
-  onClickCancel,
+  onClickDiscard,
   defaultReps = 8,
   defaultWeight = 10,
 }: TrainingSessionInterfaceProps) {
@@ -90,81 +96,105 @@ export function TrainingSessionInterface({
   }
 
   return (
-    <Stack className={styles.trainingSessionInterface}>
+    <Stack spacing="lg" className={styles.trainingSessionInterface}>
       {mode === "resting" && (
-        <Stack className={styles.set}>
-          <h2>Resting</h2>
-          {restingStartTime && (
-            <div className={styles.restingDuration}>
-              {formatTime(currentTime - restingStartTime)}
-            </div>
-          )}
+        <>
+          <h2 className={styles.classLeadingTrim}>
+            Resting(
+            {restingStartTime && formatTime(currentTime - restingStartTime)}
+            )…
+          </h2>
           <ChangeableWeight weight={weight} onChange={handleChangeWeight} />
           <div className={classButtonGroup}>
             <Button variant="primary" onClick={handleClickStartNextSet}>
               Start next set
             </Button>
-            <Button onClick={() => onCommit(session)}>Commit Session</Button>
-            <Button onClick={onClickCancel}>Cancel</Button>
           </div>
-        </Stack>
+        </>
       )}
-      {(mode === "working" || mode === "idle") && (
-        <Stack className={styles.set}>
-          {mode === "idle" && (
-            <>
-              <h2>Start session</h2>
-              <InputWeight weight={weight} onChange={handleChangeWeight} />
-              <div className={classButtonGroup}>
-                <Button onClick={onClickCancel}>Back</Button>
-                <Button variant="primary" onClick={handleClickStart}>
-                  Start
-                </Button>
-              </div>
-            </>
-          )}
-          {mode === "working" && (
-            <>
-              <h2>Working</h2>
-              <div>Weight: {weight}</div>
-              <div>Reps: {reps}</div>
-              <InputQuantity
-                className={styles.inputRepsInput}
-                value={reps}
-                onChangeValue={handleChangeReps}
-              />
-              <Button
-                variant="primary"
-                onClick={() => handleAddActivity(reps, weight)}
-              >
-                Log set
-              </Button>
-            </>
-          )}
-        </Stack>
+
+      {mode === "idle" && (
+        <>
+          <h2 className={styles.classLeadingTrim}>Start session</h2>
+          <FormField label="Weight (kg)">
+            <InputWeight weight={weight} onChange={handleChangeWeight} />
+          </FormField>
+          <div className={classButtonGroup}>
+            <Button onClick={onClickDiscard}>Cancel</Button>
+            <Button variant="primary" onClick={handleClickStart}>
+              Start
+            </Button>
+          </div>
+        </>
       )}
-      <div>
-        <h2>Debug</h2>
-        <div>Mode: {mode}</div>
-        {sessionDuration !== null && (
-          <div>Session time: {formatTime(sessionDuration)}</div>
-        )}
-        <div>Logged activities:</div>
+
+      {mode === "working" && (
+        <>
+          <h2 className={styles.classLeadingTrim}>Working({weight}kg)…</h2>
+          <FormField label="Reps count">
+            <InputQuantity
+              className={styles.inputRepsInput}
+              value={reps}
+              onChangeValue={handleChangeReps}
+            />
+          </FormField>
+          <div className={classButtonGroup}>
+            <Button
+              variant="primary"
+              onClick={() => handleAddActivity(reps, weight)}
+            >
+              Log set
+            </Button>
+          </div>
+        </>
+      )}
+
+      {session.activities.length > 0 && (
         <div>
-          {session.activities.map((activity, index) => (
-            <div key={index}>
-              {activity.type === "set" && (
-                <div>
-                  {activity.reps} reps at {activity.weight}kg
-                </div>
-              )}
-              {activity.type === "rest" && (
-                <div>Resting for {formatTime(activity.duration)}</div>
-              )}
-            </div>
-          ))}
+          <h3 className={styles.classLeadingTrim}>Logged activities:</h3>
+
+          <div className={styles.activities}>
+            {session.activities.map((activity, index) => {
+              const setNumber = session.activities
+                .slice(0, index + 1)
+                .filter((a) => a.type === "set").length;
+              return (
+                <>
+                  {activity.type === "set" && (
+                    <div className={styles.loggedActivity}>
+                      <strong>
+                        Set {setNumber}: {activity.reps} reps at{" "}
+                        {activity.weight}
+                        kg
+                      </strong>
+                    </div>
+                  )}
+                  {activity.type === "rest" && (
+                    <div className={styles.loggedActivity}>
+                      Resting for {formatTime(activity.duration)}
+                    </div>
+                  )}
+                </>
+              );
+            })}
+          </div>
         </div>
+      )}
+
+      <div className={classButtonGroup}>
+        <Button onClick={() => onCommit(session)}>Commit Session</Button>
+        <Button onClick={onClickDiscard}>Discard</Button>
       </div>
+
+      {isDebugEnabled && (
+        <div>
+          <h2>Debug</h2>
+          <div>Mode: {mode}</div>
+          {sessionDuration !== null && (
+            <div>Session time: {formatTime(sessionDuration)}</div>
+          )}
+        </div>
+      )}
     </Stack>
   );
 }
@@ -178,8 +208,10 @@ function InputWeight({
   autoFocus?: boolean;
   onChange: (weight: number) => void;
 }) {
+  const formFieldContext = useContext(FormFieldContext);
   return (
     <InputQuantity
+      inputId={formFieldContext?.htmlFor}
       autoFocus={autoFocus}
       value={weight}
       onChangeValue={onChange}
@@ -201,16 +233,13 @@ function ChangeableWeight({
       {isChanging ? (
         <InputWeight autoFocus={true} weight={weight} onChange={onChange} />
       ) : (
-        <>
-          <div>Weight: {weight}</div>
-          <Button
-            onClick={() => {
-              setIsChanging(true);
-            }}
-          >
-            Change
-          </Button>
-        </>
+        <Button
+          onClick={() => {
+            setIsChanging(true);
+          }}
+        >
+          Change weight ({weight}kg)
+        </Button>
       )}
     </div>
   );

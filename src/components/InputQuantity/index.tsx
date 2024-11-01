@@ -7,6 +7,7 @@ type InputQuantityProps = {
   autoFocus?: boolean;
   className?: string;
   disabled?: boolean;
+  inputId?: string;
   value: number;
   onChangeInput?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeValue?: (value: number) => void;
@@ -16,6 +17,7 @@ export function InputQuantity({
   autoFocus,
   className,
   disabled,
+  inputId,
   value,
   onChangeInput,
   onChangeValue,
@@ -67,6 +69,7 @@ export function InputQuantity({
         autoFocus={autoFocus}
         type="number"
         step={1}
+        id={inputId}
         disabled={disabled}
         onBlur={handleBlurInput}
         value={intermediateValue ?? value}

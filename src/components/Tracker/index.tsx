@@ -67,8 +67,10 @@ export function Tracker({
     setActiveSession(null);
   }
 
-  function handleClickCancel() {
-    setActiveSession(null);
+  function handleClickDiscardSession() {
+    if (window.confirm("Are you sure you want to discard this session?")) {
+      setActiveSession(null);
+    }
   }
 
   function handleDeleteSession(sessionId: number) {
@@ -111,7 +113,7 @@ export function Tracker({
         session={activeSession}
         onChange={(session) => setActiveSession(session)}
         onCommit={handleCommitSession}
-        onClickCancel={handleClickCancel}
+        onClickDiscard={handleClickDiscardSession}
       />
     );
   }
