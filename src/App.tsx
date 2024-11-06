@@ -67,7 +67,7 @@ function App() {
       return produce(trackers, (draft) => {
         const trackerIndex = draft.findIndex((t) => t.id === trackerId);
         if (trackerIndex !== -1) {
-          trackers.splice(trackerIndex, 1);
+          draft.splice(trackerIndex, 1);
         }
       });
     });
