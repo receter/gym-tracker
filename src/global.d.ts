@@ -1,6 +1,7 @@
 type TrainingTracker = {
   id: number;
   name: string;
+  description?: string;
   machineId?: number;
   sessions: TrainingTrackerSession[];
 };

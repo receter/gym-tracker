@@ -138,10 +138,10 @@ function NewTrackerForm(props: {
         <TextInput value={name} onChange={(e) => setName(e.target.value)} />
       </FormField>
       <div className={classButtonGroup}>
-        <Button onClick={handleClose}>Cancel</Button>
         <Button variant="primary" onClick={handleClickSave}>
           Save
         </Button>
+        <Button onClick={handleClose}>Cancel</Button>
       </div>
     </Stack>
   );

@@ -2,6 +2,10 @@
   position: relative;
 }
 
+.trackerDescription {
+  margin-top: var(--sys42-spacing-sm);
+}
+
 .sessions {
 }
 
@@ -68,10 +72,7 @@
   opacity: 1;
 }
 
-.editNameContainer {
-  display: flex;
-  align-items: center;
-  gap: var(--sys42-spacing-md);
+.editTrackerContainer {
 }
 
 .deleteTracker {

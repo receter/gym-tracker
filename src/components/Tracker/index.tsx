@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Button,
   classButtonGroup,
+  FormField,
   OverflowMenu,
   Stack,
   TextInput,
@@ -31,8 +32,10 @@ export function Tracker({
 }) {
   const [activeSession, setActiveSession] =
     useState<TrainingTrackerSessionPrototype | null>(null);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState("");
+  const [isEditingTracker, setIsEditingTracker] = useState(false);
+  const [editedTracker, setEditedTracker] = useState<TrainingTracker | null>(
+    null,
+  );
 
   const [sessionDefaultReps, sessionDefaultWeight] = useMemo(() => {
     if (tracker.sessions.length > 0) {
@@ -93,16 +96,29 @@ export function Tracker({
   }
 
   function handleClickEditButton() {
-    setEditedName(tracker.name);
-    setIsEditingName(true);
+    setEditedTracker(tracker);
+    setIsEditingTracker(true);
   }
 
-  function handleSaveName() {
-    const updatedTracker = produce(tracker, (draft) => {
-      draft.name = editedName;
-    });
-    onChange(updatedTracker);
-    setIsEditingName(false);
+  function handleChangeEditedTrackerName(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    if (editedTracker) {
+      setEditedTracker({ ...editedTracker, name: event.target.value });
+    }
+  }
+
+  function handleChangeEditedTrackerDescription(
+    event: React.ChangeEvent<HTMLTextAreaElement>,
+  ) {
+    if (editedTracker) {
+      setEditedTracker({ ...editedTracker, description: event.target.value });
+    }
+  }
+
+  function handleSaveTracker(tracker: TrainingTracker) {
+    onChange(tracker);
+    setIsEditingTracker(false);
   }
 
   if (activeSession) {
@@ -118,37 +134,65 @@ export function Tracker({
     );
   }
 
+  if (isEditingTracker && editedTracker) {
+    return (
+      <Stack className={styles.editTrackerContainer}>
+        <h1>Edit tracker: {tracker.name}</h1>
+        <FormField label="Name">
+          {(ctx) => (
+            <TextInput
+              autoFocus
+              id={ctx.htmlFor}
+              value={editedTracker.name}
+              onChange={handleChangeEditedTrackerName}
+            />
+          )}
+        </FormField>
+        <div>
+          <textarea
+            value={editedTracker.description}
+            onChange={handleChangeEditedTrackerDescription}
+          />
+        </div>
+        <div className={classButtonGroup}>
+          <Button
+            variant="primary"
+            onClick={() => handleSaveTracker(editedTracker)}
+          >
+            Save
+          </Button>
+          <Button onClick={() => setIsEditingTracker(false)}>Cancel</Button>
+        </div>
+      </Stack>
+    );
+  }
+
   return (
     <Stack spacing="lg" className={styles.tracker}>
       <div className={styles.trackerHeader}>
-        {isEditingName ? (
-          <div className={styles.editNameContainer}>
-            <TextInput
-              value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
-            />
-            <Button variant="primary" onClick={handleSaveName}>
-              Save
-            </Button>
-            <Button onClick={() => setIsEditingName(false)}>Cancel</Button>
-          </div>
-        ) : (
-          <>
-            <h1>{tracker.name}</h1>
-            <OverflowMenu>
-              <OverflowMenu.Item onClick={handleClickEditButton}>
-                Edit name
-              </OverflowMenu.Item>
-              <OverflowMenu.Item
-                className={styles.deleteTracker}
-                onClick={handleClickDelete}
-              >
-                Delete tracker
-              </OverflowMenu.Item>
-            </OverflowMenu>
-          </>
-        )}
+        <h1>{tracker.name}</h1>
+        <OverflowMenu>
+          <OverflowMenu.Item onClick={handleClickEditButton}>
+            Edit name/description
+          </OverflowMenu.Item>
+          <OverflowMenu.Item
+            className={styles.deleteTracker}
+            onClick={handleClickDelete}
+          >
+            Delete tracker
+          </OverflowMenu.Item>
+        </OverflowMenu>
       </div>
+      {tracker.description && (
+        <div className={styles.trackerDescription}>
+          {tracker.description.split("\n").map((line, index) => (
+            <Fragment key={index}>
+              {line}
+              <br />
+            </Fragment>
+          ))}
+        </div>
+      )}
       <div className={classButtonGroup}>
         <Button className={styles.backButton} onClick={onBack}>
           Back
