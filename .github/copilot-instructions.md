@@ -1,3 +1,5 @@
+If you do wording for interface elements, please refer to the Associated Press Stylebook, a comprehensive guide to grammar, punctuation, and usage in journalism and other professional writing.
+
 When importing CSS module styles, please use the following syntax:
 
 ```javascript
