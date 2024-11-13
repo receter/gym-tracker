@@ -1,4 +1,4 @@
-import { cn } from "@sys42/utils";
+import { accessibleOnClick, cn } from "@sys42/utils";
 
 import styles from "./styles.module.css";
 
@@ -32,7 +32,7 @@ function ResourceListItem({
         className,
         onClick && styles.resourceListItem_hasOnClick,
       )}
-      onClick={onClick}
+      {...(onClick && accessibleOnClick(onClick as () => void))}
     >
       {children}
     </div>
