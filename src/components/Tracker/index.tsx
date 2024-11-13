@@ -76,6 +76,10 @@ export function Tracker({
     }
   }
 
+  function handleClickCancelSession() {
+    setActiveSession(null);
+  }
+
   function handleDeleteSession(sessionId: number) {
     if (window.confirm("Are you sure you want to delete this session?")) {
       const updatedTracker = produce(tracker, (draft) => {
@@ -130,6 +134,7 @@ export function Tracker({
         onChange={(session) => setActiveSession(session)}
         onCommit={handleCommitSession}
         onClickDiscard={handleClickDiscardSession}
+        onClickCancel={handleClickCancelSession}
       />
     );
   }
@@ -198,7 +203,7 @@ export function Tracker({
           Back
         </Button>
         <Button variant="primary" onClick={handleClickStartSession}>
-          Start session
+          New session
         </Button>
       </div>
 

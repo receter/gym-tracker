@@ -22,6 +22,7 @@ type TrainingSessionInterfaceProps = {
   onChange: (session: TrainingTrackerSessionPrototype) => void;
   onCommit: (session: TrainingTrackerSessionPrototype) => void;
   onClickDiscard: () => void;
+  onClickCancel: () => void;
   defaultWeight?: number;
   defaultReps?: number;
 };
@@ -31,6 +32,7 @@ export function TrainingSessionInterface({
   onChange,
   onCommit,
   onClickDiscard,
+  onClickCancel,
   defaultReps = 8,
   defaultWeight = 10,
 }: TrainingSessionInterfaceProps) {
@@ -115,12 +117,12 @@ export function TrainingSessionInterface({
 
       {mode === "idle" && (
         <>
-          <h2 className={styles.classLeadingTrim}>Start session</h2>
+          <h2 className={styles.classLeadingTrim}>New session</h2>
           <FormField label="Weight (kg)">
             <InputWeight weight={weight} onChange={handleChangeWeight} />
           </FormField>
           <div className={classButtonGroup}>
-            <Button onClick={onClickDiscard}>Cancel</Button>
+            <Button onClick={onClickCancel}>Cancel</Button>
             <Button variant="primary" onClick={handleClickStart}>
               Start
             </Button>
@@ -181,10 +183,12 @@ export function TrainingSessionInterface({
         </div>
       )}
 
-      <div className={classButtonGroup}>
-        <Button onClick={() => onCommit(session)}>Commit Session</Button>
-        <Button onClick={onClickDiscard}>Discard</Button>
-      </div>
+      {mode !== "idle" && (
+        <div className={classButtonGroup}>
+          <Button onClick={() => onCommit(session)}>Commit Session</Button>
+          <Button onClick={onClickDiscard}>Discard</Button>
+        </div>
+      )}
 
       {isDebugEnabled && (
         <div>
