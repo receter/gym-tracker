@@ -13,6 +13,7 @@ import { useState } from "react";
 
 import { Home } from "./components/Home";
 import { Tracker } from "./components/Tracker";
+import { TrainingSessionInterface } from "./components/TrainingSessionInterface";
 import { getNextIdForItems } from "./utils";
 
 type AppMode = "trackers" | "new-tracker" | "tracker";
@@ -26,17 +27,17 @@ function App() {
     [],
   );
 
+  const [activeTrainingSession, setActiveTrainingSession] =
+    usePersistentState<ActiveTrainingSession | null>(
+      "active-training-session",
+      null,
+    );
+
   const activeTracker = trackers.find(
     (tracker) => tracker.id === activeTrackerId,
   );
 
-  // const [machines] = usePersistentState<TrainingMachine[]>(
-  //   "machines",
-  //   [],
-  // );
-
   const nextTrackerId = getNextIdForItems(trackers);
-  //const nextMachineId = getNextIdForItems(machines);
 
   const handleClickAddTracker = () => {
     setAppMode("new-tracker");
@@ -78,6 +79,68 @@ function App() {
     setAppMode("trackers");
   }
 
+  function handleNewSession(trackerId: number) {
+    const sessionDefaults = getSessionDefaults(
+      trackers.find((t) => t.id === trackerId),
+    );
+
+    setActiveTrainingSession({
+      sessionPrototype: {
+        activities: [],
+        date: null,
+      },
+      activeActivity: null,
+      currentValues: sessionDefaults,
+      trackerId,
+    });
+  }
+
+  function handleCommitActiveTrainingSession() {
+    if (activeTrainingSession == null) {
+      return;
+    }
+    const updatedTrackers = produce(trackers, (draft) => {
+      const trackerIndex = draft.findIndex(
+        (t) => t.id === activeTrainingSession.trackerId,
+      );
+      const date: string | null = activeTrainingSession.sessionPrototype.date;
+      if (trackerIndex !== -1 && date !== null) {
+        // There should be and "active activity" and this is the current rest which we
+        // will not use. But the start time is actually a more accurate time for when
+        // we ended the session.
+        let dateEnd: string;
+        if (activeTrainingSession.activeActivity?.startTime) {
+          dateEnd = new Date(
+            activeTrainingSession.activeActivity.startTime,
+          ).toISOString();
+        } else {
+          dateEnd = new Date().toISOString();
+        }
+
+        draft[trackerIndex].sessions.push({
+          ...activeTrainingSession.sessionPrototype,
+          date,
+          dateEnd,
+          id: getNextIdForItems(draft[trackerIndex].sessions),
+        });
+      }
+    });
+    setTrackers(updatedTrackers);
+    setActiveTrackerId(activeTrainingSession.trackerId);
+    setAppMode("tracker");
+    setActiveTrainingSession(null);
+  }
+
+  if (activeTrainingSession) {
+    return (
+      <ActiveTrainingSession
+        activeTrainingSession={activeTrainingSession}
+        onChange={setActiveTrainingSession}
+        onCommit={handleCommitActiveTrainingSession}
+      />
+    );
+  }
+
   return (
     <>
       {appMode === "trackers" && (
@@ -106,6 +169,7 @@ function App() {
               onChange={handleChangeTracker}
               onDelete={handleDeleteTracker}
               onBack={handleBackButtonClick}
+              onClickNewSession={() => handleNewSession(activeTracker.id)}
             />
           )}
           {!activeTracker && (
@@ -144,6 +208,53 @@ function NewTrackerForm(props: {
         <Button onClick={handleClose}>Cancel</Button>
       </div>
     </Stack>
+  );
+}
+
+function getSessionDefaults(
+  tracker?: TrainingTracker,
+): ActiveTrainingSession["currentValues"] {
+  let reps = 0;
+  let weight = 0;
+  if (tracker && tracker.sessions.length > 0) {
+    const lastSession = tracker.sessions[tracker.sessions.length - 1];
+    const firstSet = lastSession.activities.find(
+      (activity) => activity.type === "set",
+    );
+    if (firstSet) {
+      reps = firstSet.reps;
+      weight = firstSet.weight;
+    }
+  }
+  return {
+    reps,
+    weight,
+  };
+}
+
+function ActiveTrainingSession({
+  activeTrainingSession,
+  onChange,
+  onCommit,
+}: {
+  activeTrainingSession: ActiveTrainingSession;
+  onChange: (session: ActiveTrainingSession | null) => void;
+  onCommit: () => void;
+}) {
+  function handleOnClickDiscard() {
+    if (window.confirm("Are you sure you want to discard this session?")) {
+      onChange(null);
+    }
+  }
+
+  return (
+    <TrainingSessionInterface
+      activeSession={activeTrainingSession}
+      onClickCancel={() => onChange(null)}
+      onClickDiscard={handleOnClickDiscard}
+      onChange={onChange}
+      onCommit={onCommit}
+    />
   );
 }
 

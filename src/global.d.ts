@@ -20,6 +20,8 @@ type TrainingMachine = {
 
 type TrainingActivity = TrainingRest | TrainingSet | TrainingSuperSet;
 
+type TrainingActivityType = TrainingActivity["type"];
+
 type TrainingRest = {
   type: "rest";
   duration: number;
@@ -37,4 +39,19 @@ type TrainingSuperSet = {
   repsB: number;
   weightA: number;
   weightB: number;
+};
+
+type ActiveTrainingSession = {
+  sessionPrototype: Omit<TrainingTrackerSession, "dateEnd" | "id" | "date"> & {
+    date: TrainingTrackerSession["date"] | null;
+  };
+  activeActivity: {
+    type: TrainingActivityType;
+    startTime: number;
+  } | null;
+  currentValues: {
+    weight: number;
+    reps: number;
+  };
+  trackerId: number;
 };

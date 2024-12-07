@@ -9,76 +9,29 @@ import {
   TextInput,
 } from "@sys42/ui";
 import { produce } from "immer";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useState } from "react";
 
-import { formatTime, getNextIdForItems } from "../../utils";
+import { formatTime } from "../../utils";
 import { ResourceList } from "../ResourceList";
 import styles from "./styles.module.css";
-import {
-  TrainingSessionInterface,
-  TrainingTrackerSessionPrototype,
-} from "./TrainingSessionInterface";
 
 export function Tracker({
   tracker,
   onChange,
   onDelete,
   onBack,
+  onClickNewSession,
 }: {
   tracker: TrainingTracker;
   onChange: (tracker: TrainingTracker) => void;
   onDelete: (trackerId: number) => void;
   onBack: () => void;
+  onClickNewSession: () => void;
 }) {
-  const [activeSession, setActiveSession] =
-    useState<TrainingTrackerSessionPrototype | null>(null);
   const [isEditingTracker, setIsEditingTracker] = useState(false);
   const [editedTracker, setEditedTracker] = useState<TrainingTracker | null>(
     null,
   );
-
-  const [sessionDefaultReps, sessionDefaultWeight] = useMemo(() => {
-    if (tracker.sessions.length > 0) {
-      const lastSession = tracker.sessions[tracker.sessions.length - 1];
-      const lastSet = lastSession.activities.find(
-        (activity) => activity.type === "set",
-      );
-      if (lastSet) {
-        return [lastSet.reps, lastSet.weight];
-      }
-    }
-    return [];
-  }, [tracker]);
-
-  function handleClickStartSession() {
-    const newSession: TrainingTrackerSessionPrototype = {
-      date: new Date().toISOString(),
-      activities: [],
-    };
-    setActiveSession(newSession);
-  }
-
-  function handleCommitSession(session: TrainingTrackerSessionPrototype) {
-    const updatedTracker = produce(tracker, (draft) => {
-      draft.sessions.push({
-        ...session,
-        dateEnd: new Date().toISOString(),
-        id: getNextIdForItems(tracker.sessions),
-      });
-    });
-    onChange(updatedTracker);
-    setActiveSession(null);
-  }
-
-  function handleClickDiscardSession() {
-    if (window.confirm("Are you sure you want to discard this session?")) {
-      setActiveSession(null);
-    }
-  }
-
-  function handleClickCancelSession() {
-    setActiveSession(null);
-  }
 
   function handleDeleteSession(sessionId: number) {
     if (window.confirm("Are you sure you want to delete this session?")) {
@@ -123,20 +76,6 @@ export function Tracker({
   function handleSaveTracker(tracker: TrainingTracker) {
     onChange(tracker);
     setIsEditingTracker(false);
-  }
-
-  if (activeSession) {
-    return (
-      <TrainingSessionInterface
-        defaultWeight={sessionDefaultWeight}
-        defaultReps={sessionDefaultReps}
-        session={activeSession}
-        onChange={(session) => setActiveSession(session)}
-        onCommit={handleCommitSession}
-        onClickDiscard={handleClickDiscardSession}
-        onClickCancel={handleClickCancelSession}
-      />
-    );
   }
 
   if (isEditingTracker && editedTracker) {
@@ -202,7 +141,7 @@ export function Tracker({
         <Button className={styles.backButton} onClick={onBack}>
           Back
         </Button>
-        <Button variant="primary" onClick={handleClickStartSession}>
+        <Button variant="primary" onClick={onClickNewSession}>
           New session
         </Button>
       </div>
@@ -213,12 +152,14 @@ export function Tracker({
           const sessionEnd = new Date(session.dateEnd);
           const sessionDuration = sessionEnd.getTime() - sessionStart.getTime();
           const formattedStartDate = sessionStart.toLocaleString();
+          const restActivities = session.activities.filter(
+            (activity) => activity.type === "rest",
+          );
           const avarageRestDuration =
-            session.activities
-              .filter((activity) => activity.type === "rest")
-              .reduce((sum, activity) => sum + activity.duration, 0) /
-            session.activities.filter((activity) => activity.type === "rest")
-              .length;
+            restActivities.reduce(
+              (sum, activity) => sum + activity.duration,
+              0,
+            ) / Math.max(1, restActivities.length);
 
           return (
             <ResourceList.Item key={session.date} className={styles.session}>
@@ -252,14 +193,18 @@ export function Tracker({
                   >
                     {formatTime(sessionDuration)}
                   </span>
-                  {", "}
-                  Avg. resting{" "}
-                  <span
-                    className={styles.avarageRestDuration}
-                    title="Avarage rest duration"
-                  >
-                    {formatTime(avarageRestDuration)}
-                  </span>
+                  {avarageRestDuration > 0 && (
+                    <>
+                      {", "}
+                      Avg. resting{" "}
+                      <span
+                        className={styles.avarageRestDuration}
+                        title="Avarage rest duration"
+                      >
+                        {formatTime(avarageRestDuration)}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
               <SessionWeight
