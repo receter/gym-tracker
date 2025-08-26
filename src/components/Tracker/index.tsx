@@ -5,6 +5,7 @@ import {
   classButtonGroup,
   FormField,
   OverflowMenu,
+  OverflowMenuItem,
   Stack,
   TextInput,
 } from "@sys42/ui";
@@ -116,15 +117,15 @@ export function Tracker({
       <div className={styles.trackerHeader}>
         <h1>{tracker.name}</h1>
         <OverflowMenu>
-          <OverflowMenu.Item onClick={handleClickEditButton}>
+          <OverflowMenuItem onClick={handleClickEditButton}>
             Edit name/description
-          </OverflowMenu.Item>
-          <OverflowMenu.Item
+          </OverflowMenuItem>
+          <OverflowMenuItem
             className={styles.deleteTracker}
             onClick={handleClickDelete}
           >
             Delete tracker
-          </OverflowMenu.Item>
+          </OverflowMenuItem>
         </OverflowMenu>
       </div>
       {tracker.description && (
